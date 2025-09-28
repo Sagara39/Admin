@@ -1,44 +1,49 @@
-import { AlertCircle } from "lucide-react";
+import { getDashboardData, getInventory } from "@/lib/data";
+import { DollarSign, Package, ShoppingCart } from "lucide-react";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { StockSummaryTable } from "@/components/dashboard/stock-summary-table";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { InventoryItem } from "@/lib/types";
+export default async function DashboardPage() {
+  const dashboardData = await getDashboardData();
+  const inventory = await getInventory();
 
-interface LowStockAlertsProps {
-  items: InventoryItem[];
-}
+  const lowStockItems = inventory.filter(
+    (item) => item.current_amount < item.threshold
+  );
 
-export function LowStockAlerts({ items }: LowStockAlertsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Stock Threshold Alerts</CardTitle>
-        <CardDescription>Items that require immediate restocking.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {items.length > 0 ? (
-          items.map((item) => (
-            <Alert key={item.id} variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{item.name} is low!</AlertTitle>
-              <AlertDescription>
-                Only {item.current_amount} left, below threshold of{" "}
-                {item.threshold}.
-              </AlertDescription>
-            </Alert>
-          ))
-        ) : (
-          <div className="text-sm text-muted-foreground text-center py-4">
-            All stock levels are healthy.
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          title="Total Credit"
+          value={`$${dashboardData.total_credit.toLocaleString()}`}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          description="Total credit across all users"
+        />
+        <StatCard
+          title="Daily Sales"
+          value={`+${dashboardData.daily_sales_count.toLocaleString()}`}
+          icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+          description="Number of orders placed today"
+        />
+        <StatCard
+          title="Low Stock Items"
+          value={lowStockItems.length}
+          icon={<Package className="h-4 w-4 text-muted-foreground" />}
+          description={`${
+            inventory.length > 0
+              ? (
+                  (lowStockItems.length / inventory.length) *
+                  100
+                ).toFixed(0)
+              : 0
+          }% of items need restocking`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-8">
+        <StockSummaryTable inventory={inventory} />
+      </div>
+    </div>
   );
 }

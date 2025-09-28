@@ -1,13 +1,6 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getDashboardData, getInventory } from "@/lib/data";
 import { DollarSign, Package, ShoppingCart } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { LowStockAlerts } from "@/components/dashboard/low-stock-alerts";
 import { StockSummaryTable } from "@/components/dashboard/stock-summary-table";
 
 export default async function DashboardPage() {
@@ -38,36 +31,18 @@ export default async function DashboardPage() {
           value={lowStockItems.length}
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
           description={`${
-            (
-              (lowStockItems.length / inventory.length) *
-              100
-            ).toFixed(0)
+            inventory.length > 0
+              ? (
+                  (lowStockItems.length / inventory.length) *
+                  100
+                ).toFixed(0)
+              : 0
           }% of items need restocking`}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <StockSummaryTable inventory={inventory} />
-        </div>
-        <div className="flex flex-col gap-8">
-          <LowStockAlerts items={lowStockItems} />
-          <Card>
-            <CardHeader>
-              <CardTitle>Most Sold Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {dashboardData.most_sold_items.map((item) => (
-                  <li key={item.name} className="flex justify-between text-sm">
-                    <span>{item.name}</span>
-                    <span className="font-medium">{item.count} sold</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="grid grid-cols-1 gap-8">
+        <StockSummaryTable inventory={inventory} />
       </div>
     </div>
   );
