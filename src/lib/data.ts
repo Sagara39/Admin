@@ -1,12 +1,12 @@
 import type { DashboardData, InventoryItem, Order, User } from "./types";
 
 const USERS: User[] = [
-  { id: 'usr_1', name: 'Alice Johnson', credit_balance: 15.50, last_order_no: 1005, avatarUrl: 'https://picsum.photos/seed/1/40/40' },
-  { id: 'usr_2', name: 'Bob Williams', credit_balance: 5.00, last_order_no: 1003, avatarUrl: 'https://picsum.photos/seed/2/40/40' },
-  { id: 'usr_3', name: 'Charlie Brown', credit_balance: 100.25, last_order_no: 1004, avatarUrl: 'https://picsum.photos/seed/3/40/40' },
-  { id: 'usr_4', name: 'Diana Miller', credit_balance: 0, last_order_no: null, avatarUrl: 'https://picsum.photos/seed/4/40/40' },
-  { id: 'usr_5', name: 'Ethan Davis', credit_balance: 22.80, last_order_no: 1001, avatarUrl: 'https://picsum.photos/seed/5/40/40' },
-  { id: 'usr_6', name: 'Fiona Garcia', credit_balance: 3.10, last_order_no: 1002, avatarUrl: 'https://picsum.photos/seed/6/40/40' },
+  { id: 'usr_1', name: 'Alice Johnson', credit_balance: 15.50, last_order_no: 1005 },
+  { id: 'usr_2', name: 'Bob Williams', credit_balance: 5.00, last_order_no: 1003 },
+  { id: 'usr_3', name: 'Charlie Brown', credit_balance: 100.25, last_order_no: 1004 },
+  { id: 'usr_4', name: 'Diana Miller', credit_balance: 0, last_order_no: null },
+  { id: 'usr_5', name: 'Ethan Davis', credit_balance: 22.80, last_order_no: 1001 },
+  { id: 'usr_6', name: 'Fiona Garcia', credit_balance: 3.10, last_order_no: 1002 },
 ];
 
 const INVENTORY: InventoryItem[] = [

@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -79,13 +78,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
             {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{user.name}</span>
-                  </div>
+                  <span className="font-medium">{user.name}</span>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{user.id}</TableCell>
                 <TableCell className="text-right">
@@ -100,7 +93,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                         />
                     </div>
                   ) : (
-                    `$${user.credit_balance.toFixed(2)}`
+                    `Rs.${user.credit_balance.toFixed(2)}`
                   )}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">

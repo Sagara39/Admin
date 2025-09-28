@@ -86,7 +86,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                     {format(new Date(order.timestamp), "PPP p")}
                   </TableCell>
                   <TableCell className="text-right">
-                    ${order.amount.toFixed(2)}
+                    Rs.{order.amount.toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))

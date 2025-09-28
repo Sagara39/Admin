@@ -10,7 +10,6 @@ export interface User {
   name: string;
   credit_balance: number;
   last_order_no: number | null;
-  avatarUrl: string;
 }
 
 export interface Order {
