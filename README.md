@@ -1,5 +1,3 @@
-# Firebase Studio
+# Canteen Commander
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+A management dashboard UI for a bakery canteen automation system, built with Next.js and Firebase.
