@@ -5,9 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Archive,
-  ChevronRight,
   LayoutDashboard,
-  LineChart,
   PanelLeft,
   ShoppingCart,
   Users,
@@ -22,7 +20,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +44,6 @@ const navItems = [
   { href: "/users", label: "Users", icon: Users },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/inventory", label: "Inventory", icon: Archive },
-  { href: "/reports", label: "Reports", icon: LineChart },
 ];
 
 const AppSidebar = () => {
