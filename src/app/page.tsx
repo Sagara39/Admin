@@ -1,5 +1,5 @@
 import { getDashboardData, getInventory } from "@/lib/data";
-import { DollarSign, Package, ShoppingCart } from "lucide-react";
+import { Package, ShoppingCart } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StockSummaryTable } from "@/components/dashboard/stock-summary-table";
 
@@ -14,12 +14,6 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title="Total Credit"
-          value={`$${dashboardData.total_credit.toLocaleString()}`}
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
-          description="Total credit across all users"
-        />
         <StatCard
           title="Daily Sales"
           value={`+${dashboardData.daily_sales_count.toLocaleString()}`}
