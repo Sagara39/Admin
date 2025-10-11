@@ -1,79 +1,100 @@
 /**
- * @fileoverview Firestore Security Rules for the bakery canteen system.
+ * @fileoverview Firestore Security Rules for the Bakery Canteen System.
  *
  * Core Philosophy:
- * This ruleset prioritizes security for an admin-only system where authentication is not implemented within the application itself.
- * Access control is intended to be managed at the Firestore level (e.g., using IP restrictions, IAM roles) rather than through application-level authentication.
- * These rules are written with the assumption that only trusted admins will have access.
+ * This ruleset enforces a strict admin-only access model. Only authenticated clients (using anonymous auth in this prototype) can read and write data. This ensures that only the application itself can modify the database, as described in the reasoning.
  *
  * Data Structure:
- * The Firestore database consists of four top-level collections: 'users', 'orders', 'inventory_items', and 'dashboard'.
- * Each collection stores documents representing the corresponding entities (User, Order, InventoryItem, and Dashboard).
+ * - /users/{userId}: Stores user information.
+ * - /orders/{orderNumber}: Stores order details.
+ * - /inventory/{inventoryId}: Tracks inventory levels.
+ * - /dashboard/canteen_dashboard: Contains overall system metrics.
  *
  * Key Security Decisions:
- *  - No application-level authentication is enforced in these rules, deferring to Firestore-level security measures.
- *  - List operations are generally allowed, as the assumption is that only admins have access.
- *  - Write operations are protected by checking for the existence of the document before updating or deleting.
+ * - No user-level authorization: Anonymous authentication is used, but no individual user roles or permissions are implemented in the rules.
+ * - Admin-Only Access: All read and write operations are restricted to authenticated clients (i.e., the application itself).
+ * - No user listing: Listing users is implicitly disallowed.
+ *
+ * Denormalization for Authorization:
+ * Not applicable in this scenario, as authorization is based solely on client authentication (admin-only).
+ *
+ * Structural Segregation:
+ * The use of separate collections for users, orders, inventory, and dashboard data simplifies security rules and improves query performance.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages access to user data. Assumes admin-only access via Firestore-level security.
+     * @description Enforces admin-only access to user data.
      * @path /users/{userId}
-     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @deny (create, update, delete): if trying to change the user's ID after creation.
-     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     * @allow (create, update, delete) - Authenticated client (admin) can manage user data.
+     * @allow (get) - Authenticated client (admin) can retrieve user data.
+     * @deny (create, update, delete) - Unauthenticated client cannot manage user data.
+     * @deny (get) - Unauthenticated client cannot retrieve user data.
+     * @principle Restricts access to user data to authenticated clients only.
      */
     match /users/{userId} {
-      allow get, list: if true;
-      allow create: if request.auth != null && request.resource.data.id == userId;
-      allow update: if request.auth != null && resource.data.id == request.resource.data.id;
-      allow delete: if request.auth != null && resource != null;
+      allow get: if isSignedIn();
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isSignedIn() && request.resource.data.id == userId;
+      allow update: if isSignedIn() && resource.data.id == userId;
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Manages access to order data. Assumes admin-only access via Firestore-level security.
-     * @path /orders/{orderId}
-     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     * @description Enforces admin-only access to order data.
+     * @path /orders/{orderNumber}
+     * @allow (create, update, delete) - Authenticated client (admin) can manage order data.
+     * @allow (get) - Authenticated client (admin) can retrieve order data.
+     * @deny (create, update, delete) - Unauthenticated client cannot manage order data.
+     * @deny (get) - Unauthenticated client cannot retrieve order data.
+     * @principle Restricts access to order data to authenticated clients only.
      */
-    match /orders/{orderId} {
-      allow get, list: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+    match /orders/{orderNumber} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Manages access to inventory item data. Assumes admin-only access via Firestore-level security.
-     * @path /inventory_items/{inventoryItemId}
-     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     * @description Enforces admin-only access to inventory data.
+     * @path /inventory/{inventoryId}
+     * @allow (create, update, delete) - Authenticated client (admin) can manage inventory data.
+     * @allow (get) - Authenticated client (admin) can retrieve inventory data.
+     * @deny (create, update, delete) - Unauthenticated client cannot manage inventory data.
+     * @deny (get) - Unauthenticated client cannot retrieve inventory data.
+     * @principle Restricts access to inventory data to authenticated clients only.
      */
-    match /inventory_items/{inventoryItemId} {
-      allow get, list: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+    match /inventory/{inventoryId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Manages access to dashboard data. Assumes admin-only access via Firestore-level security. Only one document should exist.
-     * @path /dashboard/{dashboardId}
-     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
-     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     * @description Enforces admin-only access to dashboard data.
+     * @path /dashboard/canteen_dashboard
+     * @allow (create, update, delete) - Authenticated client (admin) can manage dashboard data.
+     * @allow (get) - Authenticated client (admin) can retrieve dashboard data.
+     * @deny (create, update, delete) - Unauthenticated client cannot manage dashboard data.
+     * @deny (get) - Unauthenticated client cannot retrieve dashboard data.
+     * @principle Restricts access to dashboard data to authenticated clients only.
      */
-    match /dashboard/{dashboardId} {
-      allow get, list: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+    match /dashboard/canteen_dashboard {
+      allow get: if isSignedIn();
+      allow list: if false; // There is one document that is not a collection, so deny list
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }

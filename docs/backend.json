@@ -8,7 +8,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user entity."
+          "description": "Unique identifier for the user."
         },
         "name": {
           "type": "string",
@@ -16,7 +16,7 @@
         },
         "creditBalance": {
           "type": "number",
-          "description": "The user's current credit balance."
+          "description": "The current credit balance of the user."
         },
         "lastOrderNo": {
           "type": "string",
@@ -26,8 +26,7 @@
       "required": [
         "id",
         "name",
-        "creditBalance",
-        "lastOrderNo"
+        "creditBalance"
       ]
     },
     "Order": {
@@ -36,17 +35,17 @@
       "type": "object",
       "description": "Represents an order placed in the bakery canteen system.",
       "properties": {
-        "id": {
+        "orderNumber": {
           "type": "string",
-          "description": "Unique identifier for the order entity."
+          "description": "Unique identifier for the order."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the User who placed the order. (Relationship: User 1:N Order)"
+          "description": "Reference to User. (Relationship: User 1:N Order)"
         },
         "items": {
           "type": "array",
-          "description": "A list of item IDs included in the order.",
+          "description": "A list of item IDs in the order. References Inventory. (Relationship: Order N:N Inventory)",
           "items": {
             "type": "string"
           }
@@ -62,24 +61,24 @@
         }
       },
       "required": [
-        "id",
+        "orderNumber",
         "userId",
         "items",
         "amount",
         "timestamp"
       ]
     },
-    "InventoryItem": {
+    "Inventory": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "InventoryItem",
+      "title": "Inventory",
       "type": "object",
-      "description": "Represents an item in the bakery's inventory.",
+      "description": "Represents an item in the bakery canteen's inventory.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the inventory item."
         },
-        "name": {
+        "itemName": {
           "type": "string",
           "description": "The name of the inventory item."
         },
@@ -89,12 +88,12 @@
         },
         "threshold": {
           "type": "number",
-          "description": "The threshold for the item, below which an alert is triggered."
+          "description": "The threshold amount for the item, below which an alert is triggered."
         }
       },
       "required": [
         "id",
-        "name",
+        "itemName",
         "currentAmount",
         "threshold"
       ]
@@ -105,28 +104,23 @@
       "type": "object",
       "description": "Represents the dashboard data for the bakery canteen system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the dashboard data. Should only have one record."
-        },
         "dailySalesCount": {
           "type": "number",
           "description": "The total sales count for the current day."
         },
         "mostSoldItems": {
           "type": "array",
-          "description": "A list of the most sold item IDs.",
+          "description": "A list of the most sold item IDs. References Inventory. (Relationship: Dashboard 1:N Inventory)",
           "items": {
             "type": "string"
           }
         },
         "totalCredit": {
           "type": "number",
-          "description": "The total amount of credit in the system."
+          "description": "The total credit available in the system."
         }
       },
       "required": [
-        "id",
         "dailySalesCount",
         "mostSoldItems",
         "totalCredit"
@@ -148,64 +142,59 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user data.  The 'userId' is the document ID.",
+          "description": "Stores user data. Includes user ID, name, credit balance, and last order number.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "Unique identifier for the user."
             }
           ]
         }
       },
       {
-        "path": "/orders/{orderId}",
+        "path": "/orders/{orderNumber}",
         "definition": {
           "entityName": "Order",
           "schema": {
             "$ref": "#/backend/entities/Order"
           },
-          "description": "Stores order data. The 'orderId' is the document ID.",
+          "description": "Stores order data. Includes order number, user ID, items, amount, and timestamp.",
           "params": [
             {
-              "name": "orderId",
-              "description": "The unique identifier for the order."
+              "name": "orderNumber",
+              "description": "Unique identifier for the order."
             }
           ]
         }
       },
       {
-        "path": "/inventory_items/{inventoryItemId}",
+        "path": "/inventory/{inventoryId}",
         "definition": {
-          "entityName": "InventoryItem",
+          "entityName": "Inventory",
           "schema": {
-            "$ref": "#/backend/entities/InventoryItem"
+            "$ref": "#/backend/entities/Inventory"
           },
-          "description": "Stores inventory item data. The 'inventoryItemId' is the document ID.",
+          "description": "Stores inventory item data. Includes item name, current amount, and threshold.",
           "params": [
             {
-              "name": "inventoryItemId",
-              "description": "The unique identifier for the inventory item."
+              "name": "inventoryId",
+              "description": "Unique identifier for the inventory item."
             }
           ]
         }
       },
       {
-        "path": "/dashboard/{dashboardId}",
+        "path": "/dashboard/canteen_dashboard",
         "definition": {
           "entityName": "Dashboard",
           "schema": {
             "$ref": "#/backend/entities/Dashboard"
           },
-          "description": "Stores dashboard data. Only one document should exist, using a fixed 'dashboardId' (e.g., 'main').",
-          "params": [
-            {
-              "name": "dashboardId",
-              "description": "The unique identifier for the dashboard data.  Should only be one record."
-            }
-          ]
+          "description": "Stores dashboard data. Includes daily sales count, most sold items, and total credit. Uses a fixed document ID 'canteen_dashboard'.",
+          "params": []
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to directly reflect the entities defined in the application, prioritizing simplicity for this admin-only system. Given the absence of authentication, access control relies on securing the Firestore instance itself (e.g., IP restrictions, IAM roles).  This design adheres to the principle of Structural Segregation, placing each entity type in its own top-level collection to simplify queries and security rules (though security rules are less relevant given the lack of authentication). Each collection corresponds to a distinct UI table, streamlining data binding. Authorization Independence is not a concern here, as there is no multi-user authorization mechanism.  The structure enables the required QAPs by segregating data types into distinct collections (e.g., 'users', 'orders', 'inventory_items', 'dashboard'), which simplifies listing operations."
+    "reasoning": "The Firestore data structure is designed to support the bakery canteen automation system, focusing on simplicity and scalability.  The structure is segregated into collections for users, orders, inventory, and dashboard data. The key principle here is **Authorization Independence**. Since this is an admin-only system with no user authentication (anonymous authentication is used, but no user-level authorization), we don't need to denormalize any authorization data.\n\n**QAPs Support:**\n*   **List Operations:** The segregated structure inherently supports secure `list` operations. Each collection can be queried independently without needing complex filtering based on authorization.\n*   **Admin-Only Access:** Since the application is for internal use and there's no individual user authentication implemented in the rules, the rules can be written to allow only authenticated users (via anonymous auth, meaning the app itself) to read and write data, which satisfies QAPs in this context.\n\nBecause the app is explicitly described as `admin-only`, security rules can ensure only authenticated clients can read and write, preventing unauthorized data access."
   }
 }
