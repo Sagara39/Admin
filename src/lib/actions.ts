@@ -13,7 +13,8 @@ export async function updateUserCredit(userId: string, newCredit: number): Promi
     return { success: true };
   } catch (error) {
     console.error("Error updating user credit:", error);
-    return { success: false, error: "Failed to update user credit." };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to update user credit: ${errorMessage}` };
   }
 }
 
@@ -30,24 +31,29 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "name_lo
     return { success: true };
   } catch (error) {
     console.error("Error adding inventory item:", error);
-    return { success: false, error: "Failed to add item to inventory." };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to add item to inventory: ${errorMessage}` };
   }
 }
 
 export async function updateInventoryItem(item: Partial<InventoryItem> & { id: string }): Promise<{ success: boolean; error?: string }> {
  try {
     const docRef = doc(firestore, "inventory", item.id);
-    const data: Partial<InventoryItem> & {name_lowercase?: string} = { ...item };
+    // Create a copy of the item object to avoid modifying the original
+    const dataToUpdate: { [key: string]: any } = { ...item };
+    delete dataToUpdate.id; // Don't try to write the id field back to the document
+
     if (item.name) {
-      data.name_lowercase = item.name.toLowerCase();
+      dataToUpdate.name_lowercase = item.name.toLowerCase();
     }
-    await updateDoc(docRef, data);
+    await updateDoc(docRef, dataToUpdate);
     revalidatePath("/inventory");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error updating inventory item:", error);
-    return { success: false, error: "Failed to update item." };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to update item: ${errorMessage}` };
   }
 }
 
@@ -60,6 +66,7 @@ export async function deleteInventoryItem(itemId: string): Promise<{ success: bo
     return { success: true };
   } catch (error) {
     console.error("Error deleting inventory item:", error);
-    return { success: false, error: "Failed to delete item." };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to delete item: ${errorMessage}` };
   }
 }
