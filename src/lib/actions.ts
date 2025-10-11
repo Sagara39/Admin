@@ -1,3 +1,4 @@
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -12,7 +13,7 @@ export async function updateUserCredit(userId: string, newCredit: number) {
   return { success: true };
 }
 
-export async function addInventoryItem(item: Omit<InventoryItem, "id", "name_lowercase">) {
+export async function addInventoryItem(item: Omit<InventoryItem, "id" | "name_lowercase">) {
   const collectionRef = collection(firestore, "inventory");
   const data = {
     ...item,
@@ -20,15 +21,16 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id", "name_low
   };
   await addDoc(collectionRef, data);
   revalidatePath("/inventory");
+  revalidatePath("/");
   return { success: true };
 }
 
-export async function updateInventoryItem(item: InventoryItem) {
+export async function updateInventoryItem(item: Partial<InventoryItem> & { id: string }) {
   const docRef = doc(firestore, "inventory", item.id);
-  const data = {
-      ...item,
-      name_lowercase: item.name.toLowerCase()
-  };
+  const data = { ...item };
+  if (item.name) {
+    data.name_lowercase = item.name.toLowerCase();
+  }
   await updateDoc(docRef, data);
   revalidatePath("/inventory");
   revalidatePath("/");

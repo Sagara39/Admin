@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -64,7 +65,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
     if (!editingRow) return;
 
     try {
-      await updateInventoryItem(editingRow as InventoryItem);
+      await updateInventoryItem(editingRow);
       setEditingRow(null);
       toast({
         title: "Success",
@@ -126,21 +127,21 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
               {inventory.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
-                    {editingRow?.id === item.id ? (
+                    {editingRow?.id === item.id && editingRow.name !== undefined ? (
                       <Input value={editingRow.name} onChange={(e) => handleFieldChange('name', e.target.value)} className="h-8" />
                     ) : (
                       item.name
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {editingRow?.id === item.id ? (
+                    {editingRow?.id === item.id && editingRow.current_amount !== undefined ? (
                       <Input type="number" value={editingRow.current_amount} onChange={(e) => handleFieldChange('current_amount', e.target.value)} className="h-8 w-24 text-right ml-auto" />
                     ) : (
                       item.current_amount
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {editingRow?.id === item.id ? (
+                    {editingRow?.id === item.id && editingRow.threshold !== undefined ? (
                       <Input type="number" value={editingRow.threshold} onChange={(e) => handleFieldChange('threshold', e.target.value)} className="h-8 w-24 text-right ml-auto" />
                     ) : (
                       item.threshold
