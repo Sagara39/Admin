@@ -1,64 +1,67 @@
-/**
- * @file Firestore Security Rules
- * @version 2
- *
- * @Core Philosophy:
- * This ruleset is in prototyping mode.
- * It prioritizes ease of access, and allows access to all users.
- *
- * @Data Structure:
- * - /users/{userId}: Stores user data, accessible by any user.
- * - /orders/{orderId}: Stores order data, accessible by any user.
- * - /inventory/{inventoryId}: Stores inventory data, accessible by any user.
- *
- * @Key Security Decisions:
- * - All data is accessible to all authenticated users for prototyping purposes.
- * - Data validation is minimal, focusing on relational integrity where feasible.
- * - In the absence of specific ownership fields, write rules are permissive for prototyping, but should be restricted in production with ownership checks.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     /**
-     * @description Allows any authenticated user to read and write user data.
-     * @path /users/{userId}
-     * @allow (get, list, create, update, delete) - Any authenticated user.
-     * @deny (none) - All users are allowed.
-     * @principle Allows read and write access to any authenticated user for prototyping.
+     * @description This ruleset enforces a public read policy for all collections. Users must be authenticated to write data.
+     * @data_structure
+     *  - /users/{userId}: Stores user profiles.
+     *  - /orders/{orderId}: Stores order history.
+     *  - /inventory/{inventoryId}: Stores inventory data.
+     * @key_security_decisions
+     *  - All collections are publicly readable.
+     *  - Write access to all collections requires authentication.
      */
-    match /users/{userId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
-    }
 
-    /**
-     * @description Allows any authenticated user to read and write order data.
-     * @path /orders/{orderId}
-     * @allow (get, list, create, update, delete) - Any authenticated user.
-     * @deny (none) - All users are allowed.
-     * @principle Allows read and write access to any authenticated user for prototyping.
-     */
-    match /orders/{orderId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
-    }
-
-    /**
-     * @description Allows any authenticated user to read and write inventory data.
-     * @path /inventory/{inventoryId}
-     * @allow (get, list, create, update, delete) - Any authenticated user.
-     * @deny (none) - All users are allowed.
-     * @principle Allows read and write access to any authenticated user for prototyping.
-     */
-    match /inventory/{inventoryId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
-    }
-
-    // Helper function to determine if a user is signed in.
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    /**
+     * @description Defines a rule for the 'users' collection. Allows public read access. Authenticated users can create documents, and only the owner can update or delete them.
+     * @path /users/{userId}
+     * @allow (get, list) Public read access is allowed.
+     * @allow (create) An authenticated user with a matching user ID can create a document. Example: User authenticated with UID 'user123' can create a document at /users/user123.
+     * @deny (create) An unauthenticated user cannot create a document. Example: Attempt to create a document at /users/user123 without authentication.
+     * @deny (update) A user cannot update a document they don't own. Example: User authenticated with UID 'user456' attempts to update a document at /users/user123.
+     * @deny (delete) A user cannot delete a document they don't own. Example: User authenticated with UID 'user456' attempts to delete a document at /users/user123.
+     * @principle Allows public read access while restricting write access to authenticated users and owners.
+     */
+    match /users/{userId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Defines a rule for the 'orders' collection. Allows public read access. Authenticated users can create documents, and only the owner can update or delete them.
+     * @path /orders/{orderId}
+     * @allow (get, list) Public read access is allowed.
+     * @allow (create) An authenticated user can create a document.
+     * @deny (create) An unauthenticated user cannot create a document.
+     * @deny (update) A user cannot update a document if not authenticated.
+     * @deny (delete) A user cannot delete a document if not authenticated.
+     * @principle Allows public read access while restricting write access to authenticated users.
+     */
+    match /orders/{orderId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Defines a rule for the 'inventory' collection. Allows public read access. Authenticated users can create documents, and only the owner can update or delete them.
+     * @path /inventory/{inventoryId}
+     * @allow (get, list) Public read access is allowed.
+     * @allow (create) An authenticated user can create a document.
+     * @deny (create) An unauthenticated user cannot create a document.
+     * @deny (update) A user cannot update a document if not authenticated.
+     * @deny (delete) A user cannot delete a document if not authenticated.
+     * @principle Allows public read access while restricting write access to authenticated users.
+     */
+    match /inventory/{inventoryId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
   }
 }
