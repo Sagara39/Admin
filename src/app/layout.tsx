@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AppShell } from '@/components/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: 'Canteen Commander',
+  title: 'ABIDS',
   description: 'Management Dashboard for a bakery canteen automation system.',
 };
 

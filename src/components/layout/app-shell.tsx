@@ -52,7 +52,7 @@ const AppSidebar = () => {
       <SidebarHeader>
         <div className="flex items-center gap-2">
           <Logo className="w-8 h-8 text-primary" />
-          <span className="text-lg font-semibold">Canteen Cmdr</span>
+          <span className="text-lg font-semibold">ABIDS</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -100,7 +100,7 @@ const MobileMenu = () => {
         <SheetHeader className="p-4">
           <div className="flex items-center gap-2">
             <Logo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-semibold">Canteen Cmdr</span>
+            <span className="text-lg font-semibold">ABIDS</span>
           </div>
         </SheetHeader>
         <nav className="grid gap-2 text-lg font-medium p-4">
