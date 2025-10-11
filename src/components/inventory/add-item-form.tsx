@@ -51,19 +51,19 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      await addInventoryItem(values);
+    const result = await addInventoryItem(values);
+    if (result.success) {
       toast({
           title: "Item Added",
           description: `"${values.name}" has been added to the inventory.`,
       });
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } else {
        toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add item.",
+        description: result.error || "Failed to add item.",
       });
     }
   }
@@ -137,7 +137,9 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>
                 </DialogClose>
-                <Button type="submit">Add Item</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Adding..." : "Add Item"}
+                </Button>
             </DialogFooter>
           </form>
         </Form>

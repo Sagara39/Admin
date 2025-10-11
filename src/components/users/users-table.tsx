@@ -42,18 +42,18 @@ export function UsersTable({ users }: UsersTableProps) {
   };
 
   const handleSaveClick = async (userId: string) => {
-    try {
-      await updateUserCredit(userId, editingCredit);
+    const result = await updateUserCredit(userId, editingCredit);
+    if (result.success) {
       setEditingRowId(null);
       toast({
         title: "Success",
         description: "User credit updated successfully.",
       });
-    } catch (error) {
+    } else {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update user credit.",
+        description: result.error || "Failed to update user credit.",
       });
     }
   };

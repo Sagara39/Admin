@@ -64,35 +64,34 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
   const handleSaveClick = async () => {
     if (!editingRow) return;
 
-    try {
-      await updateInventoryItem(editingRow);
+    const result = await updateInventoryItem(editingRow);
+    if(result.success) {
       setEditingRow(null);
       toast({
         title: "Success",
         description: "Item updated successfully.",
       });
-    } catch(e) {
+    } else {
        toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update item.",
+        description: result.error || "Failed to update item.",
       });
     }
   };
 
-  const handleDelete = async (itemId: string) => {
-    try {
-      await deleteInventoryItem(itemId);
+  const handleDelete = async (itemId: string, itemName: string) => {
+    const result = await deleteInventoryItem(itemId);
+    if (result.success) {
       toast({
-        variant: "destructive",
         title: "Item Deleted",
-        description: "The inventory item has been removed.",
+        description: `"${itemName}" has been removed from the inventory.`,
       });
-    } catch (e) {
+    } else {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete item.",
+        description: result.error || "Failed to delete item.",
       });
     }
   };
@@ -186,7 +185,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(item.id)}>Delete</AlertDialogAction>
+                              <AlertDialogAction onClick={() => handleDelete(item.id, item.name)}>Delete</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
