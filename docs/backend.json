@@ -13,10 +13,6 @@
         "credit_balance": {
           "type": "number",
           "description": "The current credit balance of the user."
-        },
-        "last_order_no": {
-          "type": "string",
-          "description": "The order number of the user's last order."
         }
       },
       "required": [
@@ -111,7 +107,7 @@
       "schema": {
         "$ref": "#/backend/entities/User"
       },
-      "description": "Stores user data. Includes user ID, name, credit balance, and last order number."
+      "description": "Stores user data. Includes user ID, name, and credit balance."
     },
     "/orders/{orderId}": {
       "schema": {

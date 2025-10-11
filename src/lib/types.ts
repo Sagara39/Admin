@@ -13,7 +13,6 @@ export interface User {
   id: string;
   name: string;
   credit_balance: number;
-  last_order_no: number | null;
 }
 
 export interface Order {

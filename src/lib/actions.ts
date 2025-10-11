@@ -5,6 +5,19 @@ import { collection, doc, addDoc, updateDoc, deleteDoc } from "firebase/firestor
 import { firestore } from "@/firebase/server";
 import type { InventoryItem, User } from "./types";
 
+export async function addUser(user: Omit<User, "id">): Promise<{ success: boolean; error?: string }> {
+  try {
+    const collectionRef = collection(firestore, "users");
+    await addDoc(collectionRef, user);
+    revalidatePath("/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding user:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to add user: ${errorMessage}` };
+  }
+}
+
 export async function updateUserCredit(userId: string, newCredit: number): Promise<{ success: boolean; error?: string }> {
   try {
     const userRef = doc(firestore, "users", userId);
@@ -39,9 +52,8 @@ export async function addInventoryItem(item: Omit<InventoryItem, "id" | "name_lo
 export async function updateInventoryItem(item: Partial<InventoryItem> & { id: string }): Promise<{ success: boolean; error?: string }> {
  try {
     const docRef = doc(firestore, "inventory", item.id);
-    // Create a copy of the item object to avoid modifying the original
     const dataToUpdate: { [key: string]: any } = { ...item };
-    delete dataToUpdate.id; // Don't try to write the id field back to the document
+    delete dataToUpdate.id; 
 
     if (item.name) {
       dataToUpdate.name_lowercase = item.name.toLowerCase();

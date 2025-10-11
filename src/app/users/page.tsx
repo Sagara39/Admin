@@ -20,7 +20,7 @@ export default function UsersPage() {
     }
 
     return (
-        <div>_
+        <div>
             <UsersTable users={users || []} />
         </div>
     );
