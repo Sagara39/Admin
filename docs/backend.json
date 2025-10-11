@@ -1,0 +1,211 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the bakery canteen system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "creditBalance": {
+          "type": "number",
+          "description": "The user's current credit balance."
+        },
+        "lastOrderNo": {
+          "type": "string",
+          "description": "The order number of the user's last order."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "creditBalance",
+        "lastOrderNo"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents an order placed in the bakery canteen system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who placed the order. (Relationship: User 1:N Order)"
+        },
+        "items": {
+          "type": "array",
+          "description": "A list of item IDs included in the order.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "amount": {
+          "type": "number",
+          "description": "The total amount of the order."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The timestamp of when the order was placed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "items",
+        "amount",
+        "timestamp"
+      ]
+    },
+    "InventoryItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InventoryItem",
+      "type": "object",
+      "description": "Represents an item in the bakery's inventory.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inventory item."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the inventory item."
+        },
+        "currentAmount": {
+          "type": "number",
+          "description": "The current amount of the item in stock."
+        },
+        "threshold": {
+          "type": "number",
+          "description": "The threshold for the item, below which an alert is triggered."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "currentAmount",
+        "threshold"
+      ]
+    },
+    "Dashboard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Dashboard",
+      "type": "object",
+      "description": "Represents the dashboard data for the bakery canteen system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the dashboard data. Should only have one record."
+        },
+        "dailySalesCount": {
+          "type": "number",
+          "description": "The total sales count for the current day."
+        },
+        "mostSoldItems": {
+          "type": "array",
+          "description": "A list of the most sold item IDs.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "totalCredit": {
+          "type": "number",
+          "description": "The total amount of credit in the system."
+        }
+      },
+      "required": [
+        "id",
+        "dailySalesCount",
+        "mostSoldItems",
+        "totalCredit"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data.  The 'userId' is the document ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores order data. The 'orderId' is the document ID.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/inventory_items/{inventoryItemId}",
+        "definition": {
+          "entityName": "InventoryItem",
+          "schema": {
+            "$ref": "#/backend/entities/InventoryItem"
+          },
+          "description": "Stores inventory item data. The 'inventoryItemId' is the document ID.",
+          "params": [
+            {
+              "name": "inventoryItemId",
+              "description": "The unique identifier for the inventory item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/dashboard/{dashboardId}",
+        "definition": {
+          "entityName": "Dashboard",
+          "schema": {
+            "$ref": "#/backend/entities/Dashboard"
+          },
+          "description": "Stores dashboard data. Only one document should exist, using a fixed 'dashboardId' (e.g., 'main').",
+          "params": [
+            {
+              "name": "dashboardId",
+              "description": "The unique identifier for the dashboard data.  Should only be one record."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to directly reflect the entities defined in the application, prioritizing simplicity for this admin-only system. Given the absence of authentication, access control relies on securing the Firestore instance itself (e.g., IP restrictions, IAM roles).  This design adheres to the principle of Structural Segregation, placing each entity type in its own top-level collection to simplify queries and security rules (though security rules are less relevant given the lack of authentication). Each collection corresponds to a distinct UI table, streamlining data binding. Authorization Independence is not a concern here, as there is no multi-user authorization mechanism.  The structure enables the required QAPs by segregating data types into distinct collections (e.g., 'users', 'orders', 'inventory_items', 'dashboard'), which simplifies listing operations."
+  }
+}

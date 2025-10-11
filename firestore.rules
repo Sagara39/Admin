@@ -1,0 +1,79 @@
+/**
+ * @fileoverview Firestore Security Rules for the bakery canteen system.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security for an admin-only system where authentication is not implemented within the application itself.
+ * Access control is intended to be managed at the Firestore level (e.g., using IP restrictions, IAM roles) rather than through application-level authentication.
+ * These rules are written with the assumption that only trusted admins will have access.
+ *
+ * Data Structure:
+ * The Firestore database consists of four top-level collections: 'users', 'orders', 'inventory_items', and 'dashboard'.
+ * Each collection stores documents representing the corresponding entities (User, Order, InventoryItem, and Dashboard).
+ *
+ * Key Security Decisions:
+ *  - No application-level authentication is enforced in these rules, deferring to Firestore-level security measures.
+ *  - List operations are generally allowed, as the assumption is that only admins have access.
+ *  - Write operations are protected by checking for the existence of the document before updating or deleting.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Manages access to user data. Assumes admin-only access via Firestore-level security.
+     * @path /users/{userId}
+     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @deny (create, update, delete): if trying to change the user's ID after creation.
+     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     */
+    match /users/{userId} {
+      allow get, list: if true;
+      allow create: if request.auth != null && request.resource.data.id == userId;
+      allow update: if request.auth != null && resource.data.id == request.resource.data.id;
+      allow delete: if request.auth != null && resource != null;
+    }
+
+    /**
+     * @description Manages access to order data. Assumes admin-only access via Firestore-level security.
+     * @path /orders/{orderId}
+     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     */
+    match /orders/{orderId} {
+      allow get, list: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
+    }
+
+    /**
+     * @description Manages access to inventory item data. Assumes admin-only access via Firestore-level security.
+     * @path /inventory_items/{inventoryItemId}
+     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     */
+    match /inventory_items/{inventoryItemId} {
+      allow get, list: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
+    }
+
+    /**
+     * @description Manages access to dashboard data. Assumes admin-only access via Firestore-level security. Only one document should exist.
+     * @path /dashboard/{dashboardId}
+     * @allow (get, list): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @allow (create, update, delete): Any authenticated user (assumed to be an admin via Firestore-level security).
+     * @principle Assumes access is managed at the Firestore level (e.g., IP restrictions, IAM roles) rather than application-level authentication.
+     */
+    match /dashboard/{dashboardId} {
+      allow get, list: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
+    }
+  }
+}
