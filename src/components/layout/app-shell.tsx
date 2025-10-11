@@ -36,7 +36,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Logo } from "../icons/logo";
 
 const navItems = [
@@ -76,9 +75,6 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback>A</AvatarFallback>
-          </Avatar>
           <div className="flex flex-col text-sm">
             <span className="font-semibold">Admin User</span>
             <span className="text-muted-foreground">admin@bakery.com</span>
