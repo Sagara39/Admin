@@ -1,15 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
 import { InventoryTable } from "@/components/inventory/inventory-table";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import type { InventoryItem } from '@/lib/types';
 
 export default function InventoryPage() {
     const firestore = useFirestore();
     
-    const inventoryQuery = useMemo(() => {
+    const inventoryQuery = useMemoFirebase(() => {
       if (!firestore) return null;
       return collection(firestore, 'inventory');
     }, [firestore]);

@@ -1,15 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
 import { OrdersTable } from "@/components/orders/orders-table";
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 
 export default function OrdersPage() {
     const firestore = useFirestore();
     
-    const ordersQuery = useMemo(() => {
+    const ordersQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'orders'), orderBy('timestamp', 'desc'));
     }, [firestore]);
