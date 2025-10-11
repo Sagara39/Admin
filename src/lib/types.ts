@@ -3,6 +3,7 @@ import { Timestamp } from "firebase/firestore";
 export interface InventoryItem {
   id: string;
   name: string;
+  name_lowercase: string;
   current_amount: number;
   threshold: number;
 }
