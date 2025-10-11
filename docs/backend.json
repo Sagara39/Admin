@@ -79,6 +79,10 @@
         "name_lowercase": {
           "type": "string"
         },
+        "price": {
+          "type": "number",
+          "description": "The price of the item."
+        },
         "current_amount": {
           "type": "number",
           "description": "The current amount of the item in stock."
@@ -91,6 +95,7 @@
       "required": [
         "name",
         "name_lowercase",
+        "price",
         "current_amount",
         "threshold"
       ]

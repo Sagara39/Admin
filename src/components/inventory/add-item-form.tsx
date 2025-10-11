@@ -28,6 +28,7 @@ import { addInventoryItem } from "@/lib/actions";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
+  price: z.coerce.number().positive("Price must be a positive number."),
   current_amount: z.coerce.number().int().nonnegative("Stock must be a positive number."),
   threshold: z.coerce.number().int().nonnegative("Threshold must be a positive number."),
 });
@@ -43,6 +44,7 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      price: 0,
       current_amount: 0,
       threshold: 10,
     },
@@ -85,6 +87,19 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
                   <FormLabel>Item Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Croissant" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (Rs.)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 150" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

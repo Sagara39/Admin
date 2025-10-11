@@ -4,6 +4,7 @@ export interface InventoryItem {
   id: string;
   name: string;
   name_lowercase: string;
+  price: number;
   current_amount: number;
   threshold: number;
 }

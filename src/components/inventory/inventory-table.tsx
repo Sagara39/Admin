@@ -56,7 +56,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
   
   const handleFieldChange = (field: keyof Omit<InventoryItem, 'id'>, value: string) => {
     if (editingRow) {
-      const numericValue = ['current_amount', 'threshold'].includes(field) ? parseInt(value, 10) : value;
+      const numericValue = ['current_amount', 'threshold', 'price'].includes(field) ? parseFloat(value) : value;
       setEditingRow({ ...editingRow, [field]: numericValue });
     }
   };
@@ -118,6 +118,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Item Name</TableHead>
+                <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Current Stock</TableHead>
                 <TableHead className="text-right">Threshold</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
@@ -131,6 +132,13 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                       <Input value={editingRow.name} onChange={(e) => handleFieldChange('name', e.target.value)} className="h-8" />
                     ) : (
                       item.name
+                    )}
+                  </TableCell>
+                   <TableCell className="text-right">
+                    {editingRow?.id === item.id && editingRow.price !== undefined ? (
+                      <Input type="number" value={editingRow.price} onChange={(e) => handleFieldChange('price', e.target.value)} className="h-8 w-24 text-right ml-auto" />
+                    ) : (
+                      `Rs.${item.price.toFixed(2)}`
                     )}
                   </TableCell>
                   <TableCell className="text-right">
