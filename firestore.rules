@@ -1,114 +1,64 @@
 /**
- * @fileoverview Firestore Security Rules for the bakery canteen system.
+ * @file Firestore Security Rules
+ * @version 2
  *
- * Core Philosophy:
- * This ruleset enforces a user-ownership model for user profiles, allowing users to read and modify their own data.
- * Orders are publicly readable, but only created with user-specific data.
- * The Inventory is publicly readable but only writable by the app backend (no user writes).
+ * @Core Philosophy:
+ * This ruleset is in prototyping mode.
+ * It prioritizes ease of access, and allows access to all users.
  *
- * Data Structure:
- * - /users/{userId}: Stores individual user profiles.
- * - /orders/{orderId}: Stores order history.
- * - /inventory/{inventoryId}: Stores inventory information.
+ * @Data Structure:
+ * - /users/{userId}: Stores user data, accessible by any user.
+ * - /orders/{orderId}: Stores order data, accessible by any user.
+ * - /inventory/{inventoryId}: Stores inventory data, accessible by any user.
  *
- * Key Security Decisions:
- * - Users can only read their own profile data.
- * - Listing all users is disallowed.
- * - Anyone can read the orders and inventory.
- * - Only authenticated users can create orders.
- *
- * Denormalization for Authorization:
- *  - Orders include the user's ID and Name which is used to quickly identify the creator of the order.
- *
- * Structural Segregation:
- *  - The system uses separate collections for users, orders, and inventory, each with specific read/write access controls.
+ * @Key Security Decisions:
+ * - All data is accessible to all authenticated users for prototyping purposes.
+ * - Data validation is minimal, focusing on relational integrity where feasible.
+ * - In the absence of specific ownership fields, write rules are permissive for prototyping, but should be restricted in production with ownership checks.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profiles, ensuring users can only access their own data.
+     * @description Allows any authenticated user to read and write user data.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user creates their own profile with matching user ID.
-     * @allow (get, update, delete) - Authenticated user accesses their own profile with matching user ID.
-     * @deny (create) - User attempts to create a profile with a mismatched user ID.
-     * @deny (list) - Listing all users is disallowed.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (get, list, create, update, delete) - Any authenticated user.
+     * @deny (none) - All users are allowed.
+     * @principle Allows read and write access to any authenticated user for prototyping.
      */
     match /users/{userId} {
-      // Only signed-in users can access user data.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Check if the requested user ID matches the authenticated user's ID.
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      // Check if the user ID of an existing document matches the authenticated user's ID.
-      function isExistingOwner(userId) {
-        return isSignedIn() && isOwner(userId);
-      }
-
-      // Allow a user to create their own profile if the userId matches their auth.uid
-      allow create: if isSignedIn() && isOwner(userId);
-
-      // Allow a user to read their own profile
-      allow get: if isSignedIn() && isOwner(userId);
-
-      // Prevent listing all users
-      allow list: if false;
-
-      // Allow a user to update their own profile
-      allow update: if isExistingOwner(userId);
-
-      // Allow a user to delete their own profile
-      allow delete: if isExistingOwner(userId);
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages orders, allowing read access to all but restricting creation to authenticated users.
+     * @description Allows any authenticated user to read and write order data.
      * @path /orders/{orderId}
-     * @allow (create) - Authenticated user creates a new order.
-     * @allow (get, list) - Anyone can read order data.
-     * @deny (update, delete) - No one can update or delete orders.
-     * @principle Allows public read access for orders, restricts write access to authorized users.
+     * @allow (get, list, create, update, delete) - Any authenticated user.
+     * @deny (none) - All users are allowed.
+     * @principle Allows read and write access to any authenticated user for prototyping.
      */
     match /orders/{orderId} {
-      // Only signed-in users can create orders
-      allow create: if isSignedIn();
-
-      // Anyone can read orders
-      allow get, list: if true;
-
-      // Nobody can update orders
-      allow update: if false;
-
-      // Nobody can delete orders
-      allow delete: if false;
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages inventory items, allowing public read access but restricting writes.
+     * @description Allows any authenticated user to read and write inventory data.
      * @path /inventory/{inventoryId}
-     * @allow (get, list) - Anyone can read inventory data.
-     * @deny (create, update, delete) - No one can create, update, or delete inventory items.
-     * @principle Allows public read access for inventory, restricts write access to the app backend.
+     * @allow (get, list, create, update, delete) - Any authenticated user.
+     * @deny (none) - All users are allowed.
+     * @principle Allows read and write access to any authenticated user for prototyping.
      */
     match /inventory/{inventoryId} {
-      // Anyone can read inventory
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
 
-      // Nobody can create inventory items through the client
-      allow create: if false;
-
-      // Nobody can update inventory items through the client
-      allow update: if false;
-
-      // Nobody can delete inventory items through the client
-      allow delete: if false;
+    // Helper function to determine if a user is signed in.
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
