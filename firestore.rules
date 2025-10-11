@@ -1,115 +1,57 @@
 /**
- * @file Firestore Security Rules for Bakery Canteen System
+ * @fileoverview Firestore Security Rules for the bakery canteen system.
  *
- * @core_philosophy This ruleset enforces a user-ownership model for user data and allows public read access to inventory.
- *  Orders are accessible only to the user who placed them.
- * @data_structure
- *   - /users/{userId}: Stores individual user profiles.  Data is private and accessible only to the user themselves.
- *   - /orders/{orderId}: Stores order history. Accessible only to the user who created the order.
- *   - /inventory/{inventoryId}: Stores the bakery's inventory. Publicly readable.
- * @key_security_decisions
- *   - Users can only create their own user document.
- *   - Users cannot list all users.
- *   - Inventory is publicly readable but not writable by users.
- *   - Orders are private and accessible only by the user who created them.
- *   - No admin roles are defined; all access is user-based.
+ * Core Philosophy:
+ * This ruleset allows any user to read and write any data.
+ * This is configured based on instructions in the user request.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user data (name, credit_balance, last_order_no).
+ * - /orders/{orderId}: Stores order data (user_id, items, amount, timestamp).
+ * - /inventory/{inventoryId}: Stores inventory item data (name, price, current_amount, threshold).
+ *
+ * Key Security Decisions:
+ * - Any user can read and write any document, since any authentication can perform any operation.
+ *
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profiles.
+     * @description Allows any user to read and write user data.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' creates their profile.
-     *   - Auth: { uid: 'user123' }
-     *   - Request Data: { id: 'user123', name: 'John Doe', credit_balance: 100 }
-     * @allow (get) User with ID 'user123' reads their profile.
-     *   - Auth: { uid: 'user123' }
-     * @allow (update) User with ID 'user123' updates their profile.
-     *   - Auth: { uid: 'user123' }
-     * @deny (create) User with ID 'user123' tries to create profile for 'user456'.
-     *   - Auth: { uid: 'user123' }
-     *   - Request Data: { id: 'user456', name: 'John Doe', credit_balance: 100 }
-     * @deny (get) User with ID 'user123' tries to read profile for 'user456'.
-     *   - Auth: { uid: 'user123' }
-     * @principle Enforces document ownership for user profiles, ensuring users can only access their own data.
+     * @allow (get, list, create, update, delete) - Any user can perform all operations on any user document.
+     * @deny None
+     * @principle Allows all read and write access to user data.
      */
     match /users/{userId} {
-      // Verify identity
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Verify ownership
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false;
-
-      // Allow the user to create their own document, but enforce that the ID matches their auth UID.
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isExistingOwner(userId); //Enforce immutability of the user ID.
-      allow delete: if isExistingOwner(userId);
+      allow get, list: if true;
+      allow create, update, delete: if true;
     }
 
     /**
-     * @description Controls access to orders.
+     * @description Allows any user to read and write order data.
      * @path /orders/{orderId}
-     * @allow (create) User with ID 'user123' creates an order.
-     *   - Auth: { uid: 'user123' }
-     *   - Request Data: { user_id: 'user123', items: [...], amount: 25.00, timestamp: ... }
-     * @allow (get) User with ID 'user123' reads their order.
-     *   - Auth: { uid: 'user123' }
-     * @deny (get) User with ID 'user123' tries to read order for 'user456'.
-     *   - Auth: { uid: 'user123' }
-     * @principle Enforces document ownership for orders, ensuring users can only access their own order history.
+     * @allow (get, list, create, update, delete) - Any user can perform all operations on any order document.
+     * @deny None
+     * @principle Allows all read and write access to order data.
      */
     match /orders/{orderId} {
-        // Verify identity
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        // Verify ownership
-        function isOwner(userId) {
-            return request.auth.uid == userId;
-        }
-
-        function isExistingOwner() {
-          return resource != null && resource.data.user_id == request.auth.uid;
-        }
-
-        allow get: if isSignedIn() && resource.data.user_id == request.auth.uid;
-        allow list: if false;
-        allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-        allow update: if isExistingOwner();
-        allow delete: if isExistingOwner();
+      allow get, list: if true;
+      allow create, update, delete: if true;
     }
 
     /**
-     * @description Controls access to inventory items.
+     * @description Allows any user to read and write inventory data.
      * @path /inventory/{inventoryId}
-     * @allow (get) Any user can read an inventory item.
-     *   - Auth: { uid: null }
-     * @allow (list) Any user can list inventory items.
-     *   - Auth: { uid: null }
-     * @deny (create) Any user tries to create an inventory item.
-     *   - Auth: { uid: 'user123' }
-     * @principle Allows public read access to inventory data while restricting write access.
+     * @allow (get, list, create, update, delete) - Any user can perform all operations on any inventory document.
+     * @deny None
+     * @principle Allows all read and write access to inventory data.
      */
     match /inventory/{inventoryId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if true;
+      allow create, update, delete: if true;
     }
   }
 }
