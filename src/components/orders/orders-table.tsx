@@ -30,7 +30,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
 
   const filteredOrders = initialOrders.filter(
     (order) =>
-      order.id.toString().includes(searchTerm) ||
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -70,7 +70,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">#{order.id}</TableCell>
+                  <TableCell className="font-medium">#{order.id.substring(0,6)}</TableCell>
                   <TableCell>
                     <div className="font-medium">{order.user_name}</div>
                     <div className="text-sm text-muted-foreground">
@@ -83,7 +83,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                       .join(", ")}
                   </TableCell>
                   <TableCell>
-                    {format(new Date(order.timestamp), "PPP p")}
+                    {format(order.timestamp.toDate(), "PPP p")}
                   </TableCell>
                   <TableCell className="text-right">
                     Rs.{order.amount.toFixed(2)}

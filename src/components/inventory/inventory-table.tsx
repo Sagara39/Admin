@@ -39,8 +39,7 @@ interface InventoryTableProps {
   inventory: InventoryItem[];
 }
 
-export function InventoryTable({ inventory: initialInventory }: InventoryTableProps) {
-  const [inventory, setInventory] = React.useState(initialInventory);
+export function InventoryTable({ inventory }: InventoryTableProps) {
   const [isAddFormOpen, setAddFormOpen] = React.useState(false);
   const { toast } = useToast();
 
@@ -54,7 +53,7 @@ export function InventoryTable({ inventory: initialInventory }: InventoryTablePr
     setEditingRow(null);
   };
   
-  const handleFieldChange = (field: keyof InventoryItem, value: string) => {
+  const handleFieldChange = (field: keyof Omit<InventoryItem, 'id'>, value: string) => {
     if (editingRow) {
       const numericValue = ['current_amount', 'threshold'].includes(field) ? parseInt(value, 10) : value;
       setEditingRow({ ...editingRow, [field]: numericValue });
@@ -64,34 +63,42 @@ export function InventoryTable({ inventory: initialInventory }: InventoryTablePr
   const handleSaveClick = async () => {
     if (!editingRow) return;
 
-    await updateInventoryItem(editingRow as InventoryItem);
-
-    setInventory(inventory.map(i => i.id === editingRow.id ? (editingRow as InventoryItem) : i));
-    setEditingRow(null);
-    toast({
-      title: "Success",
-      description: "Item updated successfully.",
-    });
+    try {
+      await updateInventoryItem(editingRow as InventoryItem);
+      setEditingRow(null);
+      toast({
+        title: "Success",
+        description: "Item updated successfully.",
+      });
+    } catch(e) {
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update item.",
+      });
+    }
   };
 
   const handleDelete = async (itemId: string) => {
-    await deleteInventoryItem(itemId);
-    setInventory(inventory.filter((item) => item.id !== itemId));
-    toast({
-      variant: "destructive",
-      title: "Item Deleted",
-      description: "The inventory item has been removed.",
-    });
+    try {
+      await deleteInventoryItem(itemId);
+      toast({
+        variant: "destructive",
+        title: "Item Deleted",
+        description: "The inventory item has been removed.",
+      });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete item.",
+      });
+    }
   };
-  
-  const handleItemAdded = (newItem: InventoryItem) => {
-    setInventory([newItem, ...inventory]);
-    setAddFormOpen(false);
-  }
 
   return (
     <>
-      <AddItemForm open={isAddFormOpen} onOpenChange={setAddFormOpen} onItemAdded={handleItemAdded} />
+      <AddItemForm open={isAddFormOpen} onOpenChange={setAddFormOpen} />
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

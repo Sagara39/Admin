@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface InventoryItem {
   id: string;
   name: string;
@@ -13,12 +15,12 @@ export interface User {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   user_id: string;
   user_name: string;
   items: { name: string; quantity: number }[];
   amount: number;
-  timestamp: string;
+  timestamp: Timestamp;
 }
 
 export interface DashboardData {

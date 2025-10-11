@@ -11,7 +11,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -24,7 +25,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { addInventoryItem } from "@/lib/actions";
-import type { InventoryItem } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -35,10 +35,9 @@ const formSchema = z.object({
 interface AddItemFormProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onItemAdded: (newItem: InventoryItem) => void;
 }
 
-export function AddItemForm({ open, onOpenChange, onItemAdded }: AddItemFormProps) {
+export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,13 +49,21 @@ export function AddItemForm({ open, onOpenChange, onItemAdded }: AddItemFormProp
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const newItem = await addInventoryItem(values);
-    onItemAdded(newItem);
-    toast({
-        title: "Item Added",
-        description: `"${values.name}" has been added to the inventory.`,
-    });
-    form.reset();
+    try {
+      await addInventoryItem(values);
+      toast({
+          title: "Item Added",
+          description: `"${values.name}" has been added to the inventory.`,
+      });
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add item.",
+      });
+    }
   }
 
   return (
@@ -112,6 +119,9 @@ export function AddItemForm({ open, onOpenChange, onItemAdded }: AddItemFormProp
                 />
             </div>
             <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
                 <Button type="submit">Add Item</Button>
             </DialogFooter>
           </form>

@@ -1,96 +1,86 @@
 /**
- * @fileoverview Firestore Security Rules for the Bakery Canteen System.
- *
- * Core Philosophy:
- * This ruleset enforces a strict admin-only access model. Only authenticated clients (using anonymous auth in this prototype) can read and write data. This ensures that only the application itself can modify the database, as described in the reasoning.
- *
- * Data Structure:
- * - /users/{userId}: Stores user information.
- * - /orders/{orderNumber}: Stores order details.
- * - /inventory/{inventoryId}: Tracks inventory levels.
- * - /dashboard/canteen_dashboard: Contains overall system metrics.
- *
- * Key Security Decisions:
- * - No user-level authorization: Anonymous authentication is used, but no individual user roles or permissions are implemented in the rules.
- * - Admin-Only Access: All read and write operations are restricted to authenticated clients (i.e., the application itself).
- * - No user listing: Listing users is implicitly disallowed.
- *
- * Denormalization for Authorization:
- * Not applicable in this scenario, as authorization is based solely on client authentication (admin-only).
- *
- * Structural Segregation:
- * The use of separate collections for users, orders, inventory, and dashboard data simplifies security rules and improves query performance.
+ * @description This ruleset enforces a strict admin-only access model for the bakery canteen system.
+ * Only authenticated clients (via anonymous auth) can read and write data.
+ * @dataStructure
+ * - /users/{userId}: Stores user data, accessible only to authenticated clients.
+ * - /orders/{orderNumber}: Stores order data, accessible only to authenticated clients.
+ * - /inventory/{inventoryId}: Stores inventory data, accessible only to authenticated clients.
+ * - /dashboard/canteen_dashboard: Stores dashboard data, accessible only to authenticated clients.
+ * @keySecurityDecisions
+ * - No user-level authorization is implemented as this is an admin-only system.
+ * - All collections are restricted to authenticated clients only.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces admin-only access to user data.
+     * @description Manages user data, accessible only to authenticated clients.
      * @path /users/{userId}
-     * @allow (create, update, delete) - Authenticated client (admin) can manage user data.
-     * @allow (get) - Authenticated client (admin) can retrieve user data.
-     * @deny (create, update, delete) - Unauthenticated client cannot manage user data.
-     * @deny (get) - Unauthenticated client cannot retrieve user data.
-     * @principle Restricts access to user data to authenticated clients only.
+     * @allow (create, update, delete) - Authenticated client can create, update, and delete user data.
+     * @allow (get, list) - Authenticated client can get and list user data.
+     * @deny (create, update, delete) - Unauthenticated client cannot create, update, and delete user data.
+     * @deny (get, list) - Unauthenticated client cannot get and list user data.
+     * @principle Enforces authenticated access for user data management.
      */
     match /users/{userId} {
       allow get: if isSignedIn();
-      allow list: if false; // Listing users is not permitted.
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.id == userId;
-      allow update: if isSignedIn() && resource.data.id == userId;
-      allow delete: if isSignedIn();
+      allow update: if isSignedIn() && resource != null && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Enforces admin-only access to order data.
+     * @description Manages order data, accessible only to authenticated clients.
      * @path /orders/{orderNumber}
-     * @allow (create, update, delete) - Authenticated client (admin) can manage order data.
-     * @allow (get) - Authenticated client (admin) can retrieve order data.
-     * @deny (create, update, delete) - Unauthenticated client cannot manage order data.
-     * @deny (get) - Unauthenticated client cannot retrieve order data.
-     * @principle Restricts access to order data to authenticated clients only.
+     * @allow (create, update, delete) - Authenticated client can create, update, and delete order data.
+     * @allow (get, list) - Authenticated client can get and list order data.
+     * @deny (create, update, delete) - Unauthenticated client cannot create, update, and delete order data.
+     * @deny (get, list) - Unauthenticated client cannot get and list order data.
+     * @principle Enforces authenticated access for order data management.
      */
     match /orders/{orderNumber} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Enforces admin-only access to inventory data.
+     * @description Manages inventory data, accessible only to authenticated clients.
      * @path /inventory/{inventoryId}
-     * @allow (create, update, delete) - Authenticated client (admin) can manage inventory data.
-     * @allow (get) - Authenticated client (admin) can retrieve inventory data.
-     * @deny (create, update, delete) - Unauthenticated client cannot manage inventory data.
-     * @deny (get) - Unauthenticated client cannot retrieve inventory data.
-     * @principle Restricts access to inventory data to authenticated clients only.
+     * @allow (create, update, delete) - Authenticated client can create, update, and delete inventory data.
+     * @allow (get, list) - Authenticated client can get and list inventory data.
+     * @deny (create, update, delete) - Unauthenticated client cannot create, update, and delete inventory data.
+     * @deny (get, list) - Unauthenticated client cannot get and list inventory data.
+     * @principle Enforces authenticated access for inventory data management.
      */
     match /inventory/{inventoryId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Enforces admin-only access to dashboard data.
+     * @description Manages dashboard data, accessible only to authenticated clients.
      * @path /dashboard/canteen_dashboard
-     * @allow (create, update, delete) - Authenticated client (admin) can manage dashboard data.
-     * @allow (get) - Authenticated client (admin) can retrieve dashboard data.
-     * @deny (create, update, delete) - Unauthenticated client cannot manage dashboard data.
-     * @deny (get) - Unauthenticated client cannot retrieve dashboard data.
-     * @principle Restricts access to dashboard data to authenticated clients only.
+     * @allow (create, update, delete) - Authenticated client can create, update, and delete dashboard data.
+     * @allow (get) - Authenticated client can get dashboard data.
+     * @allow (list) - Authenticated client can list dashboard data.
+     * @deny (create, update, delete) - Unauthenticated client cannot create, update, and delete dashboard data.
+     * @deny (get, list) - Unauthenticated client cannot get and list dashboard data.
+     * @principle Enforces authenticated access for dashboard data management.
      */
     match /dashboard/canteen_dashboard {
       allow get: if isSignedIn();
-      allow list: if false; // There is one document that is not a collection, so deny list
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     function isSignedIn() {

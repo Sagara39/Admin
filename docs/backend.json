@@ -6,27 +6,22 @@
       "type": "object",
       "description": "Represents a user in the bakery canteen system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the user."
-        },
         "name": {
           "type": "string",
           "description": "The name of the user."
         },
-        "creditBalance": {
+        "credit_balance": {
           "type": "number",
           "description": "The current credit balance of the user."
         },
-        "lastOrderNo": {
+        "last_order_no": {
           "type": "string",
           "description": "The order number of the user's last order."
         }
       },
       "required": [
-        "id",
         "name",
-        "creditBalance"
+        "credit_balance"
       ]
     },
     "Order": {
@@ -35,19 +30,22 @@
       "type": "object",
       "description": "Represents an order placed in the bakery canteen system.",
       "properties": {
-        "orderNumber": {
-          "type": "string",
-          "description": "Unique identifier for the order."
-        },
-        "userId": {
+        "user_id": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Order)"
         },
+        "user_name": {
+          "type": "string"
+        },
         "items": {
           "type": "array",
-          "description": "A list of item IDs in the order. References Inventory. (Relationship: Order N:N Inventory)",
+          "description": "A list of items in the order.",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "quantity": { "type": "number" }
+            }
           }
         },
         "amount": {
@@ -61,8 +59,8 @@
         }
       },
       "required": [
-        "orderNumber",
-        "userId",
+        "user_id",
+        "user_name",
         "items",
         "amount",
         "timestamp"
@@ -74,15 +72,14 @@
       "type": "object",
       "description": "Represents an item in the bakery canteen's inventory.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the inventory item."
-        },
-        "itemName": {
+        "name": {
           "type": "string",
           "description": "The name of the inventory item."
         },
-        "currentAmount": {
+        "name_lowercase": {
+          "type": "string"
+        },
+        "current_amount": {
           "type": "number",
           "description": "The current amount of the item in stock."
         },
@@ -92,109 +89,36 @@
         }
       },
       "required": [
-        "id",
-        "itemName",
-        "currentAmount",
+        "name",
+        "name_lowercase",
+        "current_amount",
         "threshold"
-      ]
-    },
-    "Dashboard": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Dashboard",
-      "type": "object",
-      "description": "Represents the dashboard data for the bakery canteen system.",
-      "properties": {
-        "dailySalesCount": {
-          "type": "number",
-          "description": "The total sales count for the current day."
-        },
-        "mostSoldItems": {
-          "type": "array",
-          "description": "A list of the most sold item IDs. References Inventory. (Relationship: Dashboard 1:N Inventory)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "totalCredit": {
-          "type": "number",
-          "description": "The total credit available in the system."
-        }
-      },
-      "required": [
-        "dailySalesCount",
-        "mostSoldItems",
-        "totalCredit"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user data. Includes user ID, name, credit balance, and last order number.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "Unique identifier for the user."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/User"
       },
-      {
-        "path": "/orders/{orderNumber}",
-        "definition": {
-          "entityName": "Order",
-          "schema": {
-            "$ref": "#/backend/entities/Order"
-          },
-          "description": "Stores order data. Includes order number, user ID, items, amount, and timestamp.",
-          "params": [
-            {
-              "name": "orderNumber",
-              "description": "Unique identifier for the order."
-            }
-          ]
-        }
+      "description": "Stores user data. Includes user ID, name, credit balance, and last order number."
+    },
+    "/orders/{orderId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Order"
       },
-      {
-        "path": "/inventory/{inventoryId}",
-        "definition": {
-          "entityName": "Inventory",
-          "schema": {
-            "$ref": "#/backend/entities/Inventory"
-          },
-          "description": "Stores inventory item data. Includes item name, current amount, and threshold.",
-          "params": [
-            {
-              "name": "inventoryId",
-              "description": "Unique identifier for the inventory item."
-            }
-          ]
-        }
+      "description": "Stores order data. Includes order number, user ID, items, amount, and timestamp."
+    },
+    "/inventory/{inventoryId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Inventory"
       },
-      {
-        "path": "/dashboard/canteen_dashboard",
-        "definition": {
-          "entityName": "Dashboard",
-          "schema": {
-            "$ref": "#/backend/entities/Dashboard"
-          },
-          "description": "Stores dashboard data. Includes daily sales count, most sold items, and total credit. Uses a fixed document ID 'canteen_dashboard'.",
-          "params": []
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to support the bakery canteen automation system, focusing on simplicity and scalability.  The structure is segregated into collections for users, orders, inventory, and dashboard data. The key principle here is **Authorization Independence**. Since this is an admin-only system with no user authentication (anonymous authentication is used, but no user-level authorization), we don't need to denormalize any authorization data.\n\n**QAPs Support:**\n*   **List Operations:** The segregated structure inherently supports secure `list` operations. Each collection can be queried independently without needing complex filtering based on authorization.\n*   **Admin-Only Access:** Since the application is for internal use and there's no individual user authentication implemented in the rules, the rules can be written to allow only authenticated users (via anonymous auth, meaning the app itself) to read and write data, which satisfies QAPs in this context.\n\nBecause the app is explicitly described as `admin-only`, security rules can ensure only authenticated clients can read and write, preventing unauthorized data access."
+      "description": "Stores inventory item data. Includes item name, current amount, and threshold."
+    }
   }
 }

@@ -27,8 +27,7 @@ interface UsersTableProps {
   users: User[];
 }
 
-export function UsersTable({ users: initialUsers }: UsersTableProps) {
-  const [users, setUsers] = React.useState(initialUsers);
+export function UsersTable({ users }: UsersTableProps) {
   const [editingRowId, setEditingRowId] = React.useState<string | null>(null);
   const [editingCredit, setEditingCredit] = React.useState<number>(0);
   const { toast } = useToast();
@@ -43,16 +42,20 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   };
 
   const handleSaveClick = async (userId: string) => {
-    // Here you would call your server action to update the database
-    // For now, we just update local state and show a toast
-    await updateUserCredit(userId, editingCredit);
-
-    setUsers(users.map(u => u.id === userId ? { ...u, credit_balance: editingCredit } : u));
-    setEditingRowId(null);
-    toast({
-      title: "Success",
-      description: "User credit updated successfully.",
-    });
+    try {
+      await updateUserCredit(userId, editingCredit);
+      setEditingRowId(null);
+      toast({
+        title: "Success",
+        description: "User credit updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update user credit.",
+      });
+    }
   };
 
   return (
@@ -97,7 +100,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                   )}
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
-                    {user.last_order_no || 'N/A'}
+                    {user.last_order_no ? String(user.last_order_no).substring(0, 6) : 'N/A'}
                 </TableCell>
                 <TableCell className="text-center">
                   {editingRowId === user.id ? (
