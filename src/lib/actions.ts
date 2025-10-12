@@ -62,8 +62,7 @@ export async function updateInventoryItem(item: Partial<InventoryItem> & { id: s
  try {
     const docRef = doc(firestore, "inventory", item.id);
     const dataToUpdate: { [key: string]: any } = { ...item };
-    delete dataToUpdate.id; 
-
+    
     if (item.name) {
       dataToUpdate.name_lowercase = item.name.toLowerCase();
     }
@@ -71,7 +70,8 @@ export async function updateInventoryItem(item: Partial<InventoryItem> & { id: s
     revalidatePath("/inventory");
     revalidatePath("/");
     return { success: true };
-  } catch (error) {
+  } catch (error)
+ {
     console.error("Error updating inventory item:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return { success: false, error: `Failed to update item: ${errorMessage}` };
