@@ -139,7 +139,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                     {editingRow?.id === item.id && editingRow.price !== undefined ? (
                       <Input type="number" value={editingRow.price} onChange={(e) => handleFieldChange('price', e.target.value)} className="h-8 w-24 text-right ml-auto" />
                     ) : (
-                      `Rs.${item.price.toFixed(2)}`
+                      `Rs.${(item.price || 0).toFixed(2)}`
                     )}
                   </TableCell>
                   <TableCell className="text-right">
