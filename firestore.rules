@@ -1,65 +1,36 @@
-/**
- * @file Firestore Security Rules
- * @description This ruleset enforces a basic security model, granting full read and write access to all authenticated users for all data.
- *
- * Data Structure:
- * - /users/{userId}: Stores user profiles.
- * - /orders/{orderId}: Stores order information.
- * - /inventory/{inventoryId}: Stores inventory data.
- *
- * Key Security Decisions:
- * - All read and write access is granted to any authenticated user.
- * - Data validation is minimal due to the prototyping philosophy.
- * - List operations are allowed for all collections.
- *
- * WARNING: These rules are for rapid prototyping only and are NOT suitable for production use.
- *          They provide minimal security and should be refined before deployment.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Grants full read and write access to all authenticated users for user profiles.
-     * @path /users/{userId}
-     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any user profile.
-     * @allow (get, list) - Any authenticated user can read any user profile.
-     * @deny (create) - Not applicable, access is granted.
-     * @principle Grants read and write access to all authenticated users.
-     */
     match /users/{userId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
-    /**
-     * @description Grants full read and write access to all authenticated users for order data.
-     * @path /orders/{orderId}
-     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any order.
-     * @allow (get, list) - Any authenticated user can read any order.
-     * @deny (create) - Not applicable, access is granted.
-     * @principle Grants read and write access to all authenticated users.
-     */
     match /orders/{orderId} {
       allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && get(/databases/$(database)/documents/orders/$(orderId)).data.user_id == request.auth.uid;
+    }
+
+    match /inventory/{inventoryId} {
+      allow get, list: if true;
       allow create, update, delete: if isSignedIn();
     }
 
-    /**
-     * @description Grants full read and write access to all authenticated users for inventory data.
-     * @path /inventory/{inventoryId}
-     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any inventory item.
-     * @allow (get, list) - Any authenticated user can read any inventory item.
-     * @deny (create) - Not applicable, access is granted.
-     * @principle Grants read and write access to all authenticated users.
-     */
-    match /inventory/{inventoryId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
-    }
+    //--------------------------------------------------------------------------------
+    // Helper functions
+    //--------------------------------------------------------------------------------
 
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
   }
 }
