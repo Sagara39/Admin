@@ -1,9 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { collection, doc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, addDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { firestore } from "@/firebase/server";
 import type { InventoryItem, User } from "./types";
+
+// Helper function to generate a short unique ID
+function generateShortId() {
+    const timestamp = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).substring(2, 7);
+    return `${timestamp}${randomPart}`;
+}
 
 export async function addUser(user: Omit<User, "id">): Promise<{ success: boolean; error?: string }> {
   try {
@@ -33,12 +40,14 @@ export async function updateUserCredit(userId: string, newCredit: number): Promi
 
 export async function addInventoryItem(item: Omit<InventoryItem, "id" | "name_lowercase">): Promise<{ success: boolean; error?: string }> {
   try {
-    const collectionRef = collection(firestore, "inventory");
+    const newId = generateShortId();
+    const docRef = doc(firestore, "inventory", newId);
     const data = {
       ...item,
+      id: newId,
       name_lowercase: item.name.toLowerCase()
     };
-    await addDoc(collectionRef, data);
+    await setDoc(docRef, data);
     revalidatePath("/inventory");
     revalidatePath("/");
     return { success: true };
