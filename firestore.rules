@@ -1,74 +1,65 @@
 /**
- * @file Firestore Security Rules for Bakery Canteen System
- * @description This ruleset enforces a user-ownership model for user profiles and allows public read access to inventory and orders, with owner-only write access for orders, and allows any user to delete any item.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a basic security model, granting full read and write access to all authenticated users for all data.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles, secured with owner-only access.
+ * - /users/{userId}: Stores user profiles.
  * - /orders/{orderId}: Stores order information.
- * - /inventory/{inventoryId}: Stores inventory data, publicly readable.
+ * - /inventory/{inventoryId}: Stores inventory data.
  *
  * Key Security Decisions:
- * - User listing is disallowed to protect user privacy.
- * - Inventory is publicly readable to allow anyone to see available items.
- * - Orders are publicly readable
- * - Any user can delete any item.
+ * - All read and write access is granted to any authenticated user.
+ * - Data validation is minimal due to the prototyping philosophy.
+ * - List operations are allowed for all collections.
  *
- * Denormalization for Authorization:
- *   - The Order entity includes a `user_id` field, which is used to enforce owner-only writes.
+ * WARNING: These rules are for rapid prototyping only and are NOT suitable for production use.
+ *          They provide minimal security and should be refined before deployment.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile data, ensuring only the user can read/write their own profile.
+     * @description Grants full read and write access to all authenticated users for user profiles.
      * @path /users/{userId}
-     * @allow (create) - A user with UID 'user_abc' can create their own profile at /users/user_abc.
-     * @allow (get) - A user with UID 'user_abc' can read their own profile at /users/user_abc.
-     * @allow (update, delete) - A user with UID 'user_abc' can update/delete their own profile at /users/user_abc.
-     * @deny (create) - A user with UID 'user_abc' cannot create a profile at /users/user_def.
-     * @deny (get) - A user with UID 'user_abc' cannot read a profile at /users/user_def.
-     * @deny (update, delete) - A user with UID 'user_abc' cannot update/delete a profile at /users/user_def.
-     * @principle Enforces document ownership for all operations on user profiles.
+     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any user profile.
+     * @allow (get, list) - Any authenticated user can read any user profile.
+     * @deny (create) - Not applicable, access is granted.
+     * @principle Grants read and write access to all authenticated users.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages order data, allowing anyone to view orders and only owner to make changes except for delete which is for everyone.
+     * @description Grants full read and write access to all authenticated users for order data.
      * @path /orders/{orderId}
-     * @allow (get, list) - Any user can read order details.
-     * @allow (create) - A user with UID 'user_abc' can create an order with user_id: 'user_abc'.
-     * @allow (update) - Only the owner of the order (matching user_id) can update it.
-     * @deny (create) - A user with UID 'user_abc' cannot create an order with user_id: 'user_def'.
-     * @deny (update) - A user with UID 'user_abc' cannot update an order with user_id: 'user_def'.
-     * @principle Allows public read access while enforcing owner-only writes for orders.
+     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any order.
+     * @allow (get, list) - Any authenticated user can read any order.
+     * @deny (create) - Not applicable, access is granted.
+     * @principle Grants read and write access to all authenticated users.
      */
     match /orders/{orderId} {
-      allow get, list: if true;
-      allow create: if request.resource.data.user_id == request.auth.uid;
-      allow update: if request.resource.data.user_id == request.auth.uid;
-      allow delete: if true; // ANY USER CAN DELETE
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages inventory data, allowing anyone to read the inventory.
+     * @description Grants full read and write access to all authenticated users for inventory data.
      * @path /inventory/{inventoryId}
-     * @allow (get, list) - Any user can read inventory items.
-     * @deny (create, update, delete) - No one can create, update, or delete inventory items through the client.
-     * @principle Allows public read access to inventory data and restricts write access.
+     * @allow (create, update, delete) - Any authenticated user can create, update, or delete any inventory item.
+     * @allow (get, list) - Any authenticated user can read any inventory item.
+     * @deny (create) - Not applicable, access is granted.
+     * @principle Grants read and write access to all authenticated users.
      */
     match /inventory/{inventoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
