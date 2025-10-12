@@ -41,9 +41,11 @@ export async function updateUserCredit(userId: string, newCredit: number): Promi
 export async function addInventoryItem(item: Omit<InventoryItem, "id" | "name_lowercase">): Promise<{ success: boolean; error?: string }> {
   try {
     const newId = generateShortId();
+    // Use the generated ID for the document reference.
     const docRef = doc(firestore, "inventory", newId);
     const data = {
       ...item,
+      // Store the ID inside the document as well.
       id: newId,
       name_lowercase: item.name.toLowerCase()
     };
