@@ -7,8 +7,8 @@ import type { InventoryItem, User } from "./types";
 
 // Helper function to generate a short unique ID
 function generateShortId() {
-    const timestamp = Date.now().toString(36);
-    const randomPart = Math.random().toString(36).substring(2, 7);
+    const timestamp = Date.now().toString(36).slice(-4);
+    const randomPart = Math.random().toString(36).substring(2, 6);
     return `${timestamp}${randomPart}`;
 }
 
