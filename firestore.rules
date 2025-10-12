@@ -1,106 +1,91 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a user-ownership model for users and orders,
- *              and allows public read access to inventory items while restricting
- *              writes to authenticated users.
+ * @file Firestore Security Rules for the bakery canteen system.
  *
- * Data Structure:
- * - /users/{userId}: Stores individual user profiles, accessible only to the
- *   corresponding user.
- * - /orders/{orderId}: Stores order information, accessible only to the user
- *   who placed the order. Each order document MUST contain a 'user_id' field
- *   matching the authenticated user's UID.
- * - /inventory/{inventoryId}: Stores inventory items, publicly readable,
- *   but writable only by authenticated users.
+ * @core_philosophy This ruleset enforces a user-ownership model for user profiles
+ * and allows public read access to inventory and orders.  All write operations
+ * are restricted to authenticated users.  The rules prioritize security and
+ * assume a flexible data structure for rapid iteration.
  *
- * Key Security Decisions:
- * - User listing is disallowed for privacy.
- * - Inventory is publicly readable to allow all users to view available items.
- * - All write operations (create, update, delete) require user authentication.
+ * @data_structure
+ * - /users/{userId}: Stores individual user profiles.
+ * - /orders/{orderId}: Stores order information.
+ * - /inventory/{inventoryId}: Stores inventory data.
  *
- * Denormalization for Authorization:
- * - The 'orders' collection requires a 'user_id' field on each document to match
- *   the authenticated user's UID. This avoids the need for complex queries or
- *   additional reads to verify ownership.
+ * @key_security_decisions
+ * - User listing is disallowed.
+ * - Inventory and orders are publicly readable but writable only by authenticated users.
+ * - Data validation is limited to ownership checks and relationship enforcement.
+ *
+ * @denormalization_for_authorization
+ * - Orders store the `user_id` to enable efficient owner-based access control.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Protects user profiles, allowing only the corresponding user to read and write their own data.
+     * @description Manages access to user profiles. Only the owner can read or write their own profile.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user creates their own profile: `request.auth.uid == userId`
-     * @allow (get, update, delete) - Authenticated user accesses their own profile: `request.auth.uid == userId`
-     * @deny (create) - Authenticated user tries to create a profile with a different user ID: `request.auth.uid != userId`
-     * @deny (get, update, delete) - Authenticated user tries to access another user's profile: `request.auth.uid != userId`
-     * @principle Enforces strict user-ownership for user profiles.
+     * @allow (get, update, delete) User 'user123' can read, update, or delete their own profile.
+     * @allow (create) User 'user123' can create their own profile if request.auth.uid == userId.
+     * @deny (get, update, delete) User 'user456' cannot read, update, or delete user 'user123' profile.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in and is the owner of the resource
       function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+        return request.auth.uid == userId;
       }
 
-      // Helper function to check if the user is signed in and is the owner of the resource, also check resource != null
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Controls access to orders, ensuring only the user who placed the order can read, update, or delete it.
-     * @path /orders/{orderId}
-     * @allow (create) - Authenticated user creates an order with their user ID: `request.auth.uid == request.resource.data.user_id`
-     * @allow (get, update, delete) - Authenticated user accesses their own order: `request.auth.uid == resource.data.user_id`
-     * @deny (create) - Authenticated user tries to create an order for another user: `request.auth.uid != request.resource.data.user_id`
-     * @deny (get, update, delete) - Authenticated user tries to access another user's order: `request.auth.uid != resource.data.user_id`
-     * @principle Enforces order ownership, ensuring users can only manage their own orders.
-     */
-    match /orders/{orderId} {
-        // Helper function to check if the user is signed in
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      // Helper function to check if the user is signed in and is the owner of the resource, also check resource != null
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-        allow get: if isSignedIn() && resource.data.user_id == request.auth.uid;
-        allow list: if false;
-        allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-        allow update: if isExistingOwner(resource.data.user_id);
-        allow delete: if isExistingOwner(resource.data.user_id);
-    }
-
-    /**
-     * @description Manages access to inventory items, allowing public read access but restricting write access to authenticated users.
-     * @path /inventory/{inventoryId}
-     * @allow (get, list) - Any user can read inventory items.
-     * @allow (create, update, delete) - Authenticated user can manage inventory items.
-     * @deny (create, update, delete) - Unauthenticated user tries to manage inventory items.
-     * @principle Allows public read access to inventory while protecting write access.
-     */
-    match /inventory/{inventoryId} {
-      // Helper function to check if the user is signed in
       function isSignedIn() {
         return request.auth != null;
       }
-      allow get: if true;
-      allow list: if true;
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Manages access to orders. Publicly readable, but only authenticated users can create orders. Only the user who created the order can update or delete it.
+     * @path /orders/{orderId}
+     * @allow (get, list) Any user can read order information.
+     * @allow (create) Any signed-in user can create an order with a valid user_id.
+     * @deny (update, delete) User 'user456' cannot update or delete order 'order123' created by user 'user123'.
+     * @principle Public read, owner-only writes, relational integrity.
+     */
+    match /orders/{orderId} {
+      function isOrderOwner() {
+        return request.auth.uid == resource.data.user_id;
+      }
+
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow update: if isSignedIn() && isOrderOwner();
+      allow delete: if isSignedIn() && isOrderOwner();
+    }
+
+    /**
+     * @description Manages access to inventory items. Publicly readable, but only authenticated users can create, update, or delete items.
+     * @path /inventory/{inventoryId}
+     * @allow (get, list) Any user can read inventory information.
+     * @allow (create, update, delete) Any signed-in user can manage inventory items.
+     * @principle Public read, authenticated-user-only writes.
+     */
+    match /inventory/{inventoryId} {
+       function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }
