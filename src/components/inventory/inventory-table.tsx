@@ -117,6 +117,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Item Name</TableHead>
+                <TableHead>Item ID</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Current Stock</TableHead>
                 <TableHead className="text-right">Threshold</TableHead>
@@ -133,6 +134,7 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
                       item.name
                     )}
                   </TableCell>
+                  <TableCell className="text-muted-foreground">{item.id}</TableCell>
                    <TableCell className="text-right">
                     {editingRow?.id === item.id && editingRow.price !== undefined ? (
                       <Input type="number" value={editingRow.price} onChange={(e) => handleFieldChange('price', e.target.value)} className="h-8 w-24 text-right ml-auto" />
