@@ -1,71 +1,124 @@
 /**
  * @file Firestore Security Rules for Bakery Canteen System
  *
- * @core_philosophy
- * This ruleset prioritizes ease of prototyping.  All authenticated users have full read and write
- * access to all data.  This is NOT a secure configuration for production but allows for rapid
- * development.
+ * @core_philosophy This ruleset enforces a user-ownership model for user data,
+ *                  allows public read access to inventory data, and restricts
+ *                  order creation to authenticated users.
  *
- * @data_structure
- * - /users/{userId}: Stores user profiles, accessible only to the user themselves.
- * - /orders/{orderId}: Stores order information, accessible to any authenticated user.
- * - /inventory/{inventoryId}: Stores inventory information, accessible to any authenticated user.
+ * @data_structure The Firestore database is structured as follows:
+ *                  - /users/{userId}: Stores individual user profiles.
+ *                  - /orders/{orderId}: Stores order history.
+ *                  - /inventory/{inventoryId}: Stores inventory information.
  *
  * @key_security_decisions
- * - User listing is disallowed.
- * - All authenticated users can read and write to all collections.
+ *   - Users can only read and write their own user documents.
+ *   - Inventory data is publicly readable but only writeable by authenticated users.
+ *   - Order data can be created by authenticated users. Listing or getting orders is disabled.
+ *   - Data validation is relaxed for rapid prototyping but critical ownership
+ *     fields are validated to ensure data integrity.
+ *
+ * @denormalization_for_authorization
+ *   - The rules use the `request.auth.uid` to verify user ownership, avoiding the need for
+ *     additional `get()` calls to other documents.
+ *
+ * @structural_segregation
+ *   - Private user data is stored under `/users/{userId}`, separate from the
+ *     publicly readable inventory data in the top-level `/inventory` collection.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows any authenticated user to read and write user data.
+     * @description Controls access to user documents.
      * @path /users/{userId}
-     * @allow (create, update, delete, get, list) - Any authenticated user.
-     * @deny (none) - This rule allows any authenticated user.
-     * @principle Allows any authenticated user to read and write user data.
+     * @allow (create) User with ID 'user123' can create their own document.
+     *        request.auth.uid == 'user123' and request.resource.data.id == 'user123'
+     * @allow (get, update, delete) User with ID 'user123' can read their own document.
+     *        request.auth.uid == 'user123'
+     * @deny (create) User with ID 'user456' cannot create a document for 'user123'.
+     *       request.auth.uid == 'user456' and request.resource.data.id == 'user123'
+     * @deny (get, update, delete) User with ID 'user456' cannot read 'user123' document.
+     *       request.auth.uid == 'user456'
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if false;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isSignedIn() && isSelfCreate(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Allows any authenticated user to read and write order data.
+     * @description Controls access to order documents.
      * @path /orders/{orderId}
-     * @allow (create, update, delete, get, list) - Any authenticated user.
-     * @deny (none) - This rule allows any authenticated user.
-     * @principle Allows any authenticated user to read and write order data.
+     * @allow (create) Authenticated user can create order documents.
+     *        request.auth.uid != null
+     * @deny (get, list, update, delete) No one can get, list, update, or delete order documents.
+     *        Always denied.
+     * @principle Allows creation of orders by authenticated users, but restricts listing.
      */
     match /orders/{orderId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get: if false;
+      allow list: if false;
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows any authenticated user to read and write inventory data.
+     * @description Controls access to inventory documents.
      * @path /inventory/{inventoryId}
-     * @allow (create, update, delete, get, list) - Any authenticated user.
-     * @deny (none) - This rule allows any authenticated user.
-     * @principle Allows any authenticated user to read and write inventory data.
+     * @allow (get, list) Anyone can read inventory documents.
+     * @allow (create, update, delete) Only authenticated users can create, update, or delete.
+     * @deny (create, update, delete) Unauthenticated users cannot create, update, or delete.
+     *       request.auth.uid == null
+     * @principle Allows public read access, but restricts writes to authenticated users.
      */
     match /inventory/{inventoryId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
+    // --- Helper functions ---
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return True if the user is signed in, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the request is made by the owner of the resource.
+     * @param userId The user ID from the path.
+     * @return True if the request is made by the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Combines ownership check with document existence check for update/delete.
+     * @param userId The user ID from the path.
+     * @return True if the user is the owner and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the request is for self-creation (user ID in path matches auth UID).
+     *              Also validates that the document's 'id' field matches the path.
+     * @param userId The user ID from the path.
+     * @return True if it's a self-creation and ID matches, false otherwise.
+     */
+    function isSelfCreate(userId) {
+      return isOwner(userId) && request.resource.data.id == userId;
     }
   }
 }
