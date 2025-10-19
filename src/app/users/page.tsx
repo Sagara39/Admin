@@ -4,6 +4,7 @@ import { UsersTable } from "@/components/users/users-table";
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { User } from '@/lib/types';
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function UsersPage() {
     const firestore = useFirestore();
@@ -16,12 +17,12 @@ export default function UsersPage() {
     const { data: users, isLoading } = useCollection<User>(usersQuery);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <AppShell><div>Loading...</div></AppShell>;
     }
 
     return (
-        <div>
+        <AppShell>
             <UsersTable users={users || []} />
-        </div>
+        </AppShell>
     );
 }

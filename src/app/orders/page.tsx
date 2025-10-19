@@ -4,6 +4,7 @@ import { OrdersTable } from "@/components/orders/orders-table";
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function OrdersPage() {
     const firestore = useFirestore();
@@ -16,12 +17,12 @@ export default function OrdersPage() {
     const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <AppShell><div>Loading...</div></AppShell>;
     }
 
     return (
-        <div>
+        <AppShell>
             <OrdersTable orders={orders || []} />
-        </div>
+        </AppShell>
     );
 }

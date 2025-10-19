@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Archive,
   LayoutDashboard,
+  LogOut,
   PanelLeft,
   ShoppingCart,
   Users,
@@ -37,6 +38,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Logo } from "../icons/logo";
+import { useAuth, useUser } from "@/firebase";
+import { signOut } from "firebase/auth";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -47,6 +55,15 @@ const navItems = [
 
 const AppSidebar = () => {
   const pathname = usePathname();
+  const auth = useAuth();
+  const { user } = useUser();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/login");
+  };
+  
   return (
     <Sidebar>
       <SidebarHeader>
@@ -74,11 +91,20 @@ const AppSidebar = () => {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col text-sm">
-            <span className="font-semibold">Admin User</span>
-            <span className="text-muted-foreground">admin@bakery.com</span>
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              {user?.photoURL && <AvatarImage src={user.photoURL} alt="Avatar" />}
+              <AvatarFallback>{user?.email?.[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col text-sm">
+              <span className="font-semibold">{user?.displayName || "Admin"}</span>
+              <span className="text-muted-foreground">{user?.email}</span>
+            </div>
           </div>
+          <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8" tooltip="Log Out">
+            <LogOut />
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -161,6 +187,28 @@ const AppHeader = () => {
 };
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  React.useEffect(() => {
+    if (!isUserLoading && !user && pathname !== '/login') {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router, pathname]);
+
+  if (pathname === '/login') {
+    return <>{children}</>;
+  }
+  
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

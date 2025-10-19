@@ -4,6 +4,7 @@ import { InventoryTable } from "@/components/inventory/inventory-table";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import type { InventoryItem } from '@/lib/types';
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function InventoryPage() {
     const firestore = useFirestore();
@@ -16,12 +17,12 @@ export default function InventoryPage() {
     const { data: inventory, isLoading } = useCollection<InventoryItem>(inventoryQuery);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <AppShell><div>Loading...</div></AppShell>;
     }
 
     return (
-        <div>
+        <AppShell>
             <InventoryTable inventory={inventory || []} />
-        </div>
+        </AppShell>
     );
 }

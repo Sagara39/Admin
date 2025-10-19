@@ -8,6 +8,7 @@ import { useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { useEffect, useState, useMemo } from "react";
 import type { InventoryItem } from "@/lib/types";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function DashboardPage() {
   const firestore = useFirestore();
@@ -52,32 +53,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          title="Daily Sales"
-          value={`+${dailySalesCount.toLocaleString()}`}
-          icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
-          description="Number of orders placed today"
-        />
-        <StatCard
-          title="Low Stock Items"
-          value={lowStockItems.length}
-          icon={<Package className="h-4 w-4 text-muted-foreground" />}
-          description={`${
-            inventory && inventory.length > 0
-              ? (
-                  (lowStockItems.length / inventory.length) *
-                  100
-                ).toFixed(0)
-              : 0
-          }% of items need restocking`}
-        />
-      </div>
+    <AppShell>
+      <div className="flex flex-col gap-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            title="Daily Sales"
+            value={`+${dailySalesCount.toLocaleString()}`}
+            icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            description="Number of orders placed today"
+          />
+          <StatCard
+            title="Low Stock Items"
+            value={lowStockItems.length}
+            icon={<Package className="h-4 w-4 text-muted-foreground" />}
+            description={`${
+              inventory && inventory.length > 0
+                ? (
+                    (lowStockItems.length / inventory.length) *
+                    100
+                  ).toFixed(0)
+                : 0
+            }% of items need restocking`}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 gap-8">
-        <StockSummaryTable inventory={inventory || []} />
+        <div className="grid grid-cols-1 gap-8">
+          <StockSummaryTable inventory={inventory || []} />
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
