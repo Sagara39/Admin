@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth, useUser } from '@/firebase';
@@ -25,7 +25,13 @@ export default function LoginPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,14 +39,13 @@ export default function LoginPage() {
     const email = `${username}@abids.com`;
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      // The useEffect will handle the redirect
     } catch (error: any) {
       // If user is not found, create a new user
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
           await createUserWithEmailAndPassword(auth, email, password);
-          // The onAuthStateChanged listener in AppShell will handle the redirect
-          router.push('/');
+          // The useEffect will handle the redirect
         } catch (creationError: any) {
           toast({
             variant: "destructive",
@@ -58,11 +63,16 @@ export default function LoginPage() {
         setIsLoading(false);
       }
     }
+    // Don't set isLoading to false here immediately, as the redirect will happen
   };
   
-  if (user) {
-    router.push('/');
-    return null;
+  if (isUserLoading || user) {
+    // Show a loading state or nothing while checking auth or redirecting
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+            <div>Loading...</div>
+        </div>
+    );
   }
 
   return (
