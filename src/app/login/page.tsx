@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth, useUser } from '@/firebase';
 
 import { Button } from "@/components/ui/button";
@@ -30,17 +30,33 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    const email = `${username}@abids.com`;
     try {
-      const email = `${username}@abids.com`;
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid username or password.",
-      });
-      setIsLoading(false);
+      // If user is not found, create a new user
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          // The onAuthStateChanged listener in AppShell will handle the redirect
+          router.push('/');
+        } catch (creationError: any) {
+          toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Could not create or sign in user.",
+          });
+          setIsLoading(false);
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid username or password.",
+        });
+        setIsLoading(false);
+      }
     }
   };
   
