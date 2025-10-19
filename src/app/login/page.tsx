@@ -19,7 +19,7 @@ import { Logo } from '@/components/icons/logo';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('user@abids.com');
+  const [username, setUsername] = useState('user');
   const [password, setPassword] = useState('12341234');
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
@@ -31,13 +31,14 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const email = `${username}@abids.com`;
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: "Invalid username or password.",
       });
       setIsLoading(false);
     }
@@ -64,13 +65,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="user"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
