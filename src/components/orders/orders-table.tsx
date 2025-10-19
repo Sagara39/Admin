@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import type { Order } from "@/lib/types";
+import { format } from "date-fns";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -30,8 +31,8 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
   const filteredOrders = initialOrders.filter(
     (order) =>
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user_name.toLowerCase().includes(searchTerm.toLowerCase())
+      order.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -61,6 +62,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
               <TableHead>Order No.</TableHead>
               <TableHead>User</TableHead>
               <TableHead>Items</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -70,24 +72,27 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">#{order.id.substring(0,6)}</TableCell>
                   <TableCell>
-                    <div className="font-medium">{order.user_name}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="font-medium">{order.user_name || 'N/A'}</div>
+                    {order.user_id && <div className="text-sm text-muted-foreground">
                       {order.user_id}
-                    </div>
+                    </div>}
                   </TableCell>
                   <TableCell>
-                    {order.items
-                      .map((item) => `${item.name} (x${item.quantity})`)
+                    {order.orderItems
+                      .map((item) => `ID: ${item.menuItemId} (x${item.quantity})`)
                       .join(", ")}
                   </TableCell>
+                   <TableCell>
+                    {order.orderDate && format(order.orderDate.toDate(), "PPP")}
+                  </TableCell>
                   <TableCell className="text-right">
-                    Rs.{order.amount.toFixed(2)}
+                    Rs.{order.totalAmount.toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>

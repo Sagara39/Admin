@@ -17,11 +17,12 @@ export interface User {
 
 export interface Order {
   id: string;
-  user_id: string;
-  user_name: string;
-  items: { name: string; quantity: number }[];
-  amount: number;
-  timestamp: Timestamp;
+  user_id?: string; // Made optional as it's not in screenshot
+  user_name?: string; // Made optional as it's not in screenshot
+  orderItems: { menuItemId: string; price: number; quantity: number }[];
+  totalAmount: number;
+  orderDate: Timestamp;
+  itemCount: number;
 }
 
 export interface DashboardData {
