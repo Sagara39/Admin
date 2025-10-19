@@ -11,7 +11,7 @@ export default function OrdersPage() {
     
     const ordersQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'orders'), orderBy('timestamp', 'desc'));
+        return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'));
     }, [firestore]);
     
     const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
