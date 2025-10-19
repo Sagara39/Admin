@@ -19,8 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import type { Order } from "@/lib/types";
-import { format } from "date-fns";
-import { Timestamp } from "firebase/firestore";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -35,26 +33,6 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
       order.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const formatDate = (timestamp: Timestamp | Date) => {
-    if (!timestamp) return 'No date';
-    // The timestamp from Firestore will be a Firestore Timestamp object on the client
-    // when using onSnapshot, which has a toDate() method.
-    if (timestamp instanceof Timestamp) {
-      return format(timestamp.toDate(), "PPP");
-    }
-    // If it's already a Date object
-    if (timestamp instanceof Date) {
-      return format(timestamp, "PPP");
-    }
-    // Fallback for other potential types, though less likely with Firestore
-    const date = new Date(timestamp as any);
-    if (!isNaN(date.getTime())) {
-      return format(date, "PPP");
-    }
-    
-    return "Invalid date";
-  };
 
   return (
     <Card>
@@ -83,7 +61,6 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
               <TableHead>Order No.</TableHead>
               <TableHead>User</TableHead>
               <TableHead>Items</TableHead>
-              <TableHead>Timestamp</TableHead>
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -103,9 +80,6 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                       .map((item) => `${item.name} (x${item.quantity})`)
                       .join(", ")}
                   </TableCell>
-                  <TableCell>
-                    {formatDate(order.timestamp)}
-                  </TableCell>
                   <TableCell className="text-right">
                     Rs.{order.amount.toFixed(2)}
                   </TableCell>
@@ -113,7 +87,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={4} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>
