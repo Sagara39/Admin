@@ -41,16 +41,16 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
     // The timestamp from Firestore will be a Firestore Timestamp object on the client
     // when using onSnapshot, which has a toDate() method.
     if (timestamp instanceof Timestamp) {
-      return format(timestamp.toDate(), "PPP p");
+      return format(timestamp.toDate(), "PPP");
     }
     // If it's already a Date object
     if (timestamp instanceof Date) {
-      return format(timestamp, "PPP p");
+      return format(timestamp, "PPP");
     }
     // Fallback for other potential types, though less likely with Firestore
     const date = new Date(timestamp as any);
     if (!isNaN(date.getTime())) {
-      return format(date, "PPP p");
+      return format(date, "PPP");
     }
     
     return "Invalid date";
