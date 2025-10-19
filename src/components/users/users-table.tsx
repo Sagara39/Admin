@@ -105,7 +105,7 @@ export function UsersTable({ users }: UsersTableProps) {
                           />
                       </div>
                     ) : (
-                      `Rs.${user.credit_balance.toFixed(2)}`
+                      `Rs.${(user.credit_balance || 0).toFixed(2)}`
                     )}
                   </TableCell>
                   <TableCell className="text-center">
