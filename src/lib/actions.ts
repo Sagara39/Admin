@@ -25,16 +25,16 @@ export async function addUser(user: Omit<User, "id">): Promise<{ success: boolea
   }
 }
 
-export async function updateUserCredit(userId: string, newCredit: number): Promise<{ success: boolean; error?: string }> {
+export async function updateUser(userId: string, data: Partial<Omit<User, 'id'>>): Promise<{ success: boolean; error?: string }> {
   try {
     const userRef = doc(firestore, "users", userId);
-    await updateDoc(userRef, { credit_balance: newCredit });
+    await updateDoc(userRef, data);
     revalidatePath("/users");
     return { success: true };
   } catch (error) {
-    console.error("Error updating user credit:", error);
+    console.error("Error updating user:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return { success: false, error: `Failed to update user credit: ${errorMessage}` };
+    return { success: false, error: `Failed to update user: ${errorMessage}` };
   }
 }
 

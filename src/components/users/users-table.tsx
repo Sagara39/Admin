@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
 import { Check, Edit, PlusCircle, X } from "lucide-react";
-import { updateUserCredit } from "@/lib/actions";
+import { updateUser } from "@/lib/actions";
 import { AddUserForm } from "./add-user-form";
 
 interface UsersTableProps {
@@ -29,33 +29,41 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ users }: UsersTableProps) {
-  const [editingRowId, setEditingRowId] = React.useState<string | null>(null);
-  const [editingCredit, setEditingCredit] = React.useState<number>(0);
+  const [editingRow, setEditingRow] = React.useState<Partial<User> & { id: string } | null>(null);
   const { toast } = useToast();
   const [isAddFormOpen, setAddFormOpen] = React.useState(false);
 
   const handleEditClick = (user: User) => {
-    setEditingRowId(user.id);
-    setEditingCredit(user.credit_balance);
+    setEditingRow({ ...user });
   };
 
   const handleCancelClick = () => {
-    setEditingRowId(null);
+    setEditingRow(null);
+  };
+  
+  const handleFieldChange = (field: keyof Omit<User, 'id'>, value: string | number) => {
+    if (editingRow) {
+      setEditingRow({ ...editingRow, [field]: value });
+    }
   };
 
-  const handleSaveClick = async (userId: string) => {
-    const result = await updateUserCredit(userId, editingCredit);
+  const handleSaveClick = async () => {
+    if (!editingRow) return;
+
+    const { id, ...dataToUpdate } = editingRow;
+    const result = await updateUser(id, dataToUpdate);
+
     if (result.success) {
-      setEditingRowId(null);
+      setEditingRow(null);
       toast({
         title: "Success",
-        description: "User credit updated successfully.",
+        description: "User updated successfully.",
       });
     } else {
       toast({
         variant: "destructive",
         title: "Error",
-        description: result.error || "Failed to update user credit.",
+        description: result.error || "Failed to update user.",
       });
     }
   };
@@ -90,18 +98,26 @@ export function UsersTable({ users }: UsersTableProps) {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <span className="font-medium">{user.name}</span>
+                    {editingRow?.id === user.id ? (
+                      <Input
+                        value={editingRow.name || ''}
+                        onChange={(e) => handleFieldChange('name', e.target.value)}
+                        className="h-8"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="font-medium">{user.name}</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.id}</TableCell>
                   <TableCell className="text-right">
-                    {editingRowId === user.id ? (
+                    {editingRow?.id === user.id ? (
                       <div className="flex items-center justify-end gap-2">
                         <Input
                             type="number"
-                            value={editingCredit}
-                            onChange={(e) => setEditingCredit(parseFloat(e.target.value) || 0)}
+                            value={editingRow.credit_balance ?? 0}
+                            onChange={(e) => handleFieldChange('credit_balance', parseFloat(e.target.value) || 0)}
                             className="w-24 h-8 text-right"
-                            autoFocus
                           />
                       </div>
                     ) : (
@@ -109,9 +125,9 @@ export function UsersTable({ users }: UsersTableProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-center">
-                    {editingRowId === user.id ? (
+                    {editingRow?.id === user.id ? (
                       <div className="flex justify-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleSaveClick(user.id)} className="h-8 w-8 text-green-600 hover:text-green-600">
+                        <Button variant="ghost" size="icon" onClick={handleSaveClick} className="h-8 w-8 text-green-600 hover:text-green-600">
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={handleCancelClick} className="h-8 w-8 text-red-600 hover:text-red-600">
