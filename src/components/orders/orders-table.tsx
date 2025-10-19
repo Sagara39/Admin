@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { format } from "date-fns";
+import { Timestamp } from "firebase/firestore";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -34,6 +35,18 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
       order.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const formatDate = (timestamp: Timestamp | Date) => {
+    if (timestamp instanceof Timestamp) {
+      return format(timestamp.toDate(), "PPP p");
+    }
+    if (timestamp instanceof Date) {
+      return format(timestamp, "PPP p");
+    }
+    // Handle cases where timestamp might be a string or something else, if necessary
+    // For now, returning an empty string or a placeholder
+    return "Invalid date";
+  };
 
   return (
     <Card>
@@ -83,7 +96,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                       .join(", ")}
                   </TableCell>
                   <TableCell>
-                    {format(order.timestamp.toDate(), "PPP p")}
+                    {order.timestamp ? formatDate(order.timestamp) : 'No date'}
                   </TableCell>
                   <TableCell className="text-right">
                     Rs.{order.amount.toFixed(2)}
