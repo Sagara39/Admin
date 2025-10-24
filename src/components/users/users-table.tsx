@@ -55,6 +55,7 @@ export function UsersTable({ users }: UsersTableProps) {
     const dataToUpdate: Partial<Omit<User, 'id'>> = {
       name: editingRow.name,
       credit_balance: editingRow.credit_balance,
+      phoneNumber: editingRow.phoneNumber,
     };
     
     const result = await updateUser(editingRow.id, dataToUpdate);
@@ -96,6 +97,7 @@ export function UsersTable({ users }: UsersTableProps) {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>User ID</TableHead>
+                <TableHead>Phone Number</TableHead>
                 <TableHead className="text-right">Credit Balance</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
@@ -116,6 +118,17 @@ export function UsersTable({ users }: UsersTableProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.id}</TableCell>
+                  <TableCell>
+                     {editingRow?.id === user.id ? (
+                      <Input
+                        value={editingRow.phoneNumber || ''}
+                        onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
+                        className="h-8"
+                      />
+                    ) : (
+                      user.phoneNumber || 'N/A'
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     {editingRow?.id === user.id ? (
                       <div className="flex items-center justify-end gap-2">

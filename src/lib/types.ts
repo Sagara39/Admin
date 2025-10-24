@@ -13,6 +13,7 @@ export interface User {
   id: string;
   name: string;
   credit_balance: number;
+  phoneNumber?: string;
 }
 
 export interface Order {

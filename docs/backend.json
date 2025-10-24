@@ -13,6 +13,10 @@
         "credit_balance": {
           "type": "number",
           "description": "The current credit balance of the user."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number."
         }
       },
       "required": [
