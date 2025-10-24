@@ -50,8 +50,14 @@ export function UsersTable({ users }: UsersTableProps) {
   const handleSaveClick = async () => {
     if (!editingRow) return;
 
-    const { id, ...dataToUpdate } = editingRow;
-    const result = await updateUser(id, dataToUpdate);
+    // Create a plain object with only the fields we want to update.
+    // This prevents passing complex objects like Timestamps to the server action.
+    const dataToUpdate: Partial<Omit<User, 'id'>> = {
+      name: editingRow.name,
+      credit_balance: editingRow.credit_balance,
+    };
+    
+    const result = await updateUser(editingRow.id, dataToUpdate);
 
     if (result.success) {
       setEditingRow(null);
