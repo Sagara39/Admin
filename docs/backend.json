@@ -30,6 +30,10 @@
       "type": "object",
       "description": "Represents an order placed in the bakery canteen system.",
       "properties": {
+        "orderNo": {
+          "type": "number",
+          "description": "A sequential integer order number."
+        },
         "user_id": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Order)"
@@ -73,6 +77,7 @@
         }
       },
       "required": [
+        "orderNo",
         "user_id",
         "user_name",
         "orderItems",
