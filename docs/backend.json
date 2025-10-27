@@ -37,33 +37,48 @@
         "user_name": {
           "type": "string"
         },
-        "items": {
+        "orderItems": {
           "type": "array",
           "description": "A list of items in the order.",
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "quantity": { "type": "number" }
-            }
+              "name": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "price": {
+                "type": "number"
+              },
+              "menuItemId": {
+                "type": "string"
+              }
+            },
+            "required": ["name", "quantity", "price", "menuItemId"]
           }
         },
-        "amount": {
+        "totalAmount": {
           "type": "number",
           "description": "The total amount of the order."
         },
-        "timestamp": {
+        "orderDate": {
           "type": "string",
           "description": "The timestamp of when the order was placed.",
           "format": "date-time"
+        },
+        "itemCount": {
+            "type": "number"
         }
       },
       "required": [
         "user_id",
         "user_name",
-        "items",
-        "amount",
-        "timestamp"
+        "orderItems",
+        "totalAmount",
+        "orderDate",
+        "itemCount"
       ]
     },
     "Inventory": {

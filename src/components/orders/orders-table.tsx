@@ -79,7 +79,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                   </TableCell>
                   <TableCell>
                     {order.orderItems
-                      .map((item) => `ID: ${item.menuItemId} (x${item.quantity})`)
+                      .map((item) => `${item.name} (x${item.quantity})`)
                       .join(", ")}
                   </TableCell>
                    <TableCell>
