@@ -72,8 +72,8 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.orderNo}</TableCell>
                   <TableCell>
-                    <div className="font-medium">{order.user_name || 'N/A'}</div>
-                    {order.customerId && <div className="text-sm text-muted-foreground">
+                    <div className="font-medium">{order.user_name || order.customerId}</div>
+                    {order.user_name && order.customerId && <div className="text-sm text-muted-foreground">
                       {order.customerId}
                     </div>}
                   </TableCell>
