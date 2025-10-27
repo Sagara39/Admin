@@ -34,7 +34,7 @@
           "type": "number",
           "description": "A sequential integer order number."
         },
-        "user_id": {
+        "customerId": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Order)"
         },
@@ -60,7 +60,12 @@
                 "type": "string"
               }
             },
-            "required": ["name", "quantity", "price", "menuItemId"]
+            "required": [
+              "name",
+              "quantity",
+              "price",
+              "menuItemId"
+            ]
           }
         },
         "totalAmount": {
@@ -73,12 +78,12 @@
           "format": "date-time"
         },
         "itemCount": {
-            "type": "number"
+          "type": "number"
         }
       },
       "required": [
         "orderNo",
-        "user_id",
+        "customerId",
         "user_name",
         "orderItems",
         "totalAmount",

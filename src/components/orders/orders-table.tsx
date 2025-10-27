@@ -31,7 +31,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
   const filteredOrders = initialOrders.filter(
     (order) =>
       (order.orderNo?.toString() ?? '').includes(searchTerm.toLowerCase()) ||
-      order.user_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.customerId ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -73,8 +73,8 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                   <TableCell className="font-medium">{order.orderNo}</TableCell>
                   <TableCell>
                     <div className="font-medium">{order.user_name || 'N/A'}</div>
-                    {order.user_id && <div className="text-sm text-muted-foreground">
-                      {order.user_id}
+                    {order.customerId && <div className="text-sm text-muted-foreground">
+                      {order.customerId}
                     </div>}
                   </TableCell>
                   <TableCell>
