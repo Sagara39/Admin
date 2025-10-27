@@ -32,7 +32,8 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
     (order) =>
       (order.orderNumber?.toString() ?? '').includes(searchTerm.toLowerCase()) ||
       (order.customerId ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      (order.user_name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.user_phone ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -73,8 +74,8 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                   <TableCell className="font-medium">{order.orderNumber}</TableCell>
                   <TableCell>
                     <div className="font-medium">{order.user_name || order.customerId}</div>
-                    {order.user_name && order.customerId && <div className="text-sm text-muted-foreground">
-                      {order.customerId}
+                    {order.user_phone && <div className="text-sm text-muted-foreground">
+                      {order.user_phone}
                     </div>}
                   </TableCell>
                   <TableCell>

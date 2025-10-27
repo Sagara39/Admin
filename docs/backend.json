@@ -41,6 +41,9 @@
         "user_name": {
           "type": "string"
         },
+        "user_phone": {
+            "type": "string"
+        },
         "orderItems": {
           "type": "array",
           "description": "A list of items in the order.",

@@ -19,9 +19,9 @@ export interface User {
 export interface Order {
   id: string;
   orderNumber: number;
-  user_id?: string;
   customerId?: string;
-  user_name?: string; 
+  user_name?: string;
+  user_phone?: string;
   orderItems: { name: string; quantity: number; price: number; menuItemId: string; }[];
   totalAmount: number;
   orderDate: Timestamp;
