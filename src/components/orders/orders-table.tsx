@@ -30,7 +30,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
 
   const filteredOrders = initialOrders.filter(
     (order) =>
-      (order.orderNo?.toString() ?? '').includes(searchTerm.toLowerCase()) ||
+      (order.orderNumber?.toString() ?? '').includes(searchTerm.toLowerCase()) ||
       (order.customerId ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -70,7 +70,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.orderNo}</TableCell>
+                  <TableCell className="font-medium">{order.orderNumber}</TableCell>
                   <TableCell>
                     <div className="font-medium">{order.user_name || order.customerId}</div>
                     {order.user_name && order.customerId && <div className="text-sm text-muted-foreground">

@@ -18,7 +18,7 @@ export interface User {
 
 export interface Order {
   id: string;
-  orderNo: number;
+  orderNumber: number;
   user_id?: string;
   customerId?: string;
   user_name?: string; 

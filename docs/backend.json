@@ -30,7 +30,7 @@
       "type": "object",
       "description": "Represents an order placed in the bakery canteen system.",
       "properties": {
-        "orderNo": {
+        "orderNumber": {
           "type": "number",
           "description": "A sequential integer order number."
         },
@@ -82,7 +82,7 @@
         }
       },
       "required": [
-        "orderNo",
+        "orderNumber",
         "customerId",
         "user_name",
         "orderItems",
