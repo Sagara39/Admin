@@ -20,18 +20,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
-import { Check, Edit, PlusCircle, X } from "lucide-react";
+import { Check, Edit, Search, X } from "lucide-react";
 import { updateUser } from "@/lib/actions";
-import { AddUserForm } from "./add-user-form";
+
 
 interface UsersTableProps {
   users: User[];
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users: initialUsers }: UsersTableProps) {
   const [editingRow, setEditingRow] = React.useState<Partial<User> & { id: string } | null>(null);
   const { toast } = useToast();
-  const [isAddFormOpen, setAddFormOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   const handleEditClick = (user: User) => {
     setEditingRow({ ...user });
@@ -77,7 +77,6 @@ export function UsersTable({ users }: UsersTableProps) {
 
   return (
     <>
-      <AddUserForm open={isAddFormOpen} onOpenChange={setAddFormOpen} />
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -86,10 +85,16 @@ export function UsersTable({ users }: UsersTableProps) {
                 View and manage user credit balances.
               </CardDescription>
             </div>
-            <Button onClick={() => setAddFormOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New User
-            </Button>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by name, ID, or phone..."
+                className="pl-8 sm:w-[300px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -103,7 +108,16 @@ export function UsersTable({ users }: UsersTableProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {initialUsers
+                .filter((user) => {
+                  const searchLower = searchTerm.toLowerCase();
+                  return (
+                    user.name.toLowerCase().includes(searchLower) ||
+                    user.id.toLowerCase().includes(searchLower) ||
+                    (user.phoneNumber?.toLowerCase() ?? '').includes(searchLower)
+                  );
+                })
+                .map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
                     {editingRow?.id === user.id ? (

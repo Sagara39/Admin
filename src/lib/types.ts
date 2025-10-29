@@ -20,6 +20,7 @@ export interface Order {
   id: string;
   orderNumber: number;
   customerId?: string;
+  userId?: string;
   user_name?: string;
   user_phone?: string;
   orderItems: { name: string; quantity: number; price: number; menuItemId: string; }[];
