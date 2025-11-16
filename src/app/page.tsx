@@ -56,12 +56,14 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
-        <div className="flex items-center justify-end">
-          {/* Desktop / tablet: large prominent button */}
-          <Link href="/orders/new" className="hidden md:inline-block">
-            <button className="rounded-lg bg-primary px-8 py-5 text-primary-foreground text-2xl font-semibold shadow-2xl hover:scale-105 transition-transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-primary/40">
-              New Order
-            </button>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Link href="/orders/new" className="hidden md:block">
+            <div className="rounded-lg bg-primary text-primary-foreground p-6 shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-lg font-semibold text-center">New Order</span>
+            </div>
           </Link>
 
           {/* Floating quick-access button for small screens */}
@@ -72,8 +74,7 @@ export default function DashboardPage() {
               </svg>
             </button>
           </Link>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
           <StatCard
             title="Daily Sales"
             value={`+${dailySalesCount.toLocaleString()}`}
