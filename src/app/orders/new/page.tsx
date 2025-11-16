@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AppShell } from "@/components/layout/app-shell";
 import { useToast } from "@/hooks/use-toast";
-import { addDoc, collection as clientCollection, serverTimestamp, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { addDoc, collection as clientCollection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { placeOrder as placeOrderAction } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
 export default function NewOrderPage() {
@@ -109,18 +110,18 @@ export default function NewOrderPage() {
       orderItems,
       itemCount,
       orderNumber,
-      orderDate: serverTimestamp(),
       status: "completed",
       totalAmount: total,
     };
 
     try {
-      const col = clientCollection(firestore, "orders");
-      const docRef = await addDoc(col, orderPayload as any);
-
-      // Optionally, you can ensure the document contains its own id (not required by your format example)
-      toast({ title: "Order placed", description: `Order ${orderNumber} created.` });
-      router.push("/orders");
+      const result = await placeOrderAction(orderPayload as any);
+      if (result.success) {
+        toast({ title: "Order placed", description: `Order ${orderNumber} created.` });
+        router.push("/orders");
+      } else {
+        toast({ variant: "destructive", title: "Error", description: result.error || "Failed to place order." });
+      }
     } catch (err) {
       console.error(err);
       toast({ variant: "destructive", title: "Error", description: "Failed to place order." });

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { collection, doc, addDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, doc, addDoc, updateDoc, deleteDoc, setDoc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { firestore } from "@/firebase/server";
 import type { InventoryItem, User } from "./types";
 
@@ -91,5 +91,45 @@ export async function deleteInventoryItem(itemId: string): Promise<{ success: bo
     console.error("Error deleting inventory item:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return { success: false, error: `Failed to delete item: ${errorMessage}` };
+  }
+}
+
+export async function placeOrder(order: { orderItems: { menuItemId: string; name: string; price: number; quantity: number }[]; itemCount: number; orderNumber: string; totalAmount: number; }): Promise<{ success: boolean; error?: string }> {
+  try {
+    const newId = generateShortId();
+    const orderRef = doc(firestore, "orders", newId);
+
+    await runTransaction(firestore, async (tx) => {
+      // For each item, decrement inventory
+      for (const item of order.orderItems) {
+        const invRef = doc(firestore, "inventory", item.menuItemId);
+        const invSnap = await tx.get(invRef);
+        if (!invSnap.exists()) {
+          throw new Error(`Inventory item not found: ${item.menuItemId}`);
+        }
+        const data: any = invSnap.data();
+        const current = typeof data.current_amount === 'number' ? data.current_amount : 0;
+        if (current < item.quantity) {
+          throw new Error(`Insufficient stock for ${item.name}`);
+        }
+        tx.update(invRef, { current_amount: current - item.quantity });
+      }
+
+      // Create the order document inside the same transaction
+      const orderData = {
+        ...order,
+        id: newId,
+        orderDate: serverTimestamp(),
+      };
+      tx.set(orderRef, orderData as any);
+    });
+
+    revalidatePath("/orders");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error placing order:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: `Failed to place order: ${errorMessage}` };
   }
 }
