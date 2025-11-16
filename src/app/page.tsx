@@ -58,7 +58,9 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-end">
           <Link href="/orders/new">
-            <button className="rounded-md bg-primary px-4 py-3 text-white text-lg font-semibold shadow">New Order</button>
+            <button className="rounded-lg bg-primary px-6 py-4 text-primary-foreground text-xl font-semibold shadow-lg hover:scale-105 transition-transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-primary/40">
+              New Order
+            </button>
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
