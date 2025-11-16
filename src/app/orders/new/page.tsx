@@ -61,21 +61,35 @@ export default function NewOrderPage() {
 
   const total = React.useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
 
+  // Generate a simple order number like A1004 (prefix + last 5 digits of timestamp)
+  const generateOrderNumber = () => {
+    const tail = Date.now().toString().slice(-5);
+    return `A${tail}`;
+  };
+
   const placeOrder = async () => {
     if (!firestore) return toast({ variant: "destructive", title: "Error", description: "Firestore unavailable." });
     if (cart.length === 0) return toast({ variant: "destructive", title: "Cart is empty" });
 
-    const order = {
-      orderItems: cart.map((c) => ({ name: c.name, quantity: c.quantity, price: c.price, menuItemId: c.id })),
-      totalAmount: total,
+    const orderItems = cart.map((c) => ({ menuItemId: c.id, name: c.name, price: c.price, quantity: c.quantity }));
+    const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
+    const orderNumber = generateOrderNumber();
+
+    const orderPayload = {
+      orderItems,
+      itemCount,
+      orderNumber,
       orderDate: serverTimestamp(),
-      itemCount: cart.reduce((s, c) => s + c.quantity, 0),
+      status: "completed",
+      totalAmount: total,
     };
 
     try {
       const col = clientCollection(firestore, "orders");
-      await addDoc(col, order as any);
-      toast({ title: "Order placed", description: "The order has been created." });
+      const docRef = await addDoc(col, orderPayload as any);
+
+      // Optionally, you can ensure the document contains its own id (not required by your format example)
+      toast({ title: "Order placed", description: `Order ${orderNumber} created.` });
       router.push("/orders");
     } catch (err) {
       console.error(err);
