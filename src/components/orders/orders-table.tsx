@@ -28,13 +28,14 @@ interface OrdersTableProps {
 export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  const filteredOrders = initialOrders.filter(
-    (order) =>
-      (order.orderNumber?.toString() ?? '').includes(searchTerm.toLowerCase()) ||
-      (order.userId ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.user_name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.user_phone ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrders = initialOrders.filter((order) => {
+    const s = searchTerm.toLowerCase();
+    return (
+      (order.orderNumber ?? "").toLowerCase().includes(s) ||
+      (order.id ?? "").toLowerCase().includes(s) ||
+      order.orderItems.some((it) => (it.name ?? "").toLowerCase().includes(s))
+    );
+  });
 
   return (
     <Card>
@@ -49,7 +50,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search by Order No. or User..."
+            placeholder="Search by Order No. or Medicine..."
             className="pl-8 sm:w-[300px]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -61,7 +62,6 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Order No.</TableHead>
-              <TableHead>User</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
@@ -72,14 +72,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                  <TableCell>
-                    <div className="font-medium">{order.userId ?? order.user_name}</div>
-                    {order.user_phone && (
-                      <div className="text-sm text-muted-foreground">
-                        {order.user_phone}
-                      </div>
-                    )}
-                  </TableCell>
+                  
                   <TableCell>
                     {order.orderItems
                       .map((item) => `${item.name} (x${item.quantity})`)
@@ -95,7 +88,7 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={4} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>
