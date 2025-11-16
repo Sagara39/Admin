@@ -100,10 +100,16 @@ export async function placeOrder(order: { orderItems: { menuItemId: string; name
     const orderRef = doc(firestore, "orders", newId);
 
     await runTransaction(firestore, async (tx) => {
-      // For each item, decrement inventory
+      // Phase 1: Read all inventory items first
+      const inventorySnapshots = [];
       for (const item of order.orderItems) {
         const invRef = doc(firestore, "inventory", item.menuItemId);
         const invSnap = await tx.get(invRef);
+        inventorySnapshots.push({ item, invRef, invSnap });
+      }
+
+      // Phase 2: Validate all items exist and have sufficient stock
+      for (const { item, invSnap } of inventorySnapshots) {
         if (!invSnap.exists()) {
           throw new Error(`Inventory item not found: ${item.menuItemId}`);
         }
@@ -112,10 +118,16 @@ export async function placeOrder(order: { orderItems: { menuItemId: string; name
         if (current < item.quantity) {
           throw new Error(`Insufficient stock for ${item.name}`);
         }
+      }
+
+      // Phase 3: Write all updates (reads are complete)
+      for (const { item, invRef, invSnap } of inventorySnapshots) {
+        const data: any = invSnap.data();
+        const current = typeof data.current_amount === 'number' ? data.current_amount : 0;
         tx.update(invRef, { current_amount: current - item.quantity });
       }
 
-      // Create the order document inside the same transaction
+      // Phase 4: Create the order document
       const orderData = {
         ...order,
         id: newId,
