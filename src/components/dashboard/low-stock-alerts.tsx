@@ -1,3 +1,7 @@
+// This component is currently unused. The dashboard is implemented in src/app/page.tsx
+// Keeping this file for reference, but imports are disabled.
+
+/*
 import { getDashboardData, getInventory } from "@/lib/data";
 import { DollarSign, Package, ShoppingCart } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -8,7 +12,7 @@ export default async function DashboardPage() {
   const inventory = await getInventory();
 
   const lowStockItems = inventory.filter(
-    (item) => item.current_amount < item.threshold
+    (item: any) => item.current_amount < item.threshold
   );
 
   return (
@@ -47,3 +51,6 @@ export default async function DashboardPage() {
     </div>
   );
 }
+*/
+
+export {};

@@ -101,7 +101,7 @@ const AppSidebar = () => {
               <span className="text-muted-foreground">{user?.email}</span>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8" tooltip="Log Out">
+          <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8">
             <LogOut />
           </Button>
         </div>
