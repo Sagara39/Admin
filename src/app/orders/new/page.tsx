@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AppShell } from "@/components/layout/app-shell";
 import { useToast } from "@/hooks/use-toast";
-import { addDoc, collection as clientCollection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection as clientCollection, serverTimestamp, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 export default function NewOrderPage() {
@@ -61,10 +61,40 @@ export default function NewOrderPage() {
 
   const total = React.useMemo(() => cart.reduce((s, c) => s + c.price * c.quantity, 0), [cart]);
 
-  // Generate a simple order number like A1004 (prefix + last 5 digits of timestamp)
-  const generateOrderNumber = () => {
-    const tail = Date.now().toString().slice(-5);
-    return `A${tail}`;
+  // Generate next order number based on latest order in Firestore.
+  // Format: LetterPrefix + 4 digits (or more) e.g. A1001 ... A9999 then B0001
+  const generateOrderNumber = async (): Promise<string> => {
+    try {
+      const ordersQuery = query(clientCollection(firestore, "orders"), orderBy("orderDate", "desc"), limit(1));
+      const snap = await getDocs(ordersQuery);
+      if (snap.empty) {
+        return "A1001";
+      }
+      const doc = snap.docs[0];
+      const last = (doc.data() as any).orderNumber as string | undefined;
+      if (!last || typeof last !== "string") return "A1001";
+
+      // Parse like 'A1001' or 'B0001'
+      const prefix = last.charAt(0);
+      const numPart = parseInt(last.slice(1), 10);
+      if (isNaN(numPart)) return "A1001";
+
+      if (numPart >= 9999) {
+        // move to next letter and reset to 0001
+        const nextChar = String.fromCharCode(prefix.charCodeAt(0) + 1);
+        return `${nextChar}${String(1).padStart(4, "0")}`;
+      }
+
+      const nextNum = numPart + 1;
+      // Keep the same width as previous numeric part when possible
+      const width = Math.max(4, last.slice(1).length);
+      return `${prefix}${String(nextNum).padStart(width, "0")}`;
+    } catch (err) {
+      console.error("generateOrderNumber error", err);
+      // fallback
+      const tail = Date.now().toString().slice(-5);
+      return `A${tail}`;
+    }
   };
 
   const placeOrder = async () => {
@@ -73,7 +103,7 @@ export default function NewOrderPage() {
 
     const orderItems = cart.map((c) => ({ menuItemId: c.id, name: c.name, price: c.price, quantity: c.quantity }));
     const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
-    const orderNumber = generateOrderNumber();
+    const orderNumber = await generateOrderNumber();
 
     const orderPayload = {
       orderItems,
