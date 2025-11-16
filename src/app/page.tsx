@@ -57,9 +57,19 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-col gap-8">
         <div className="flex items-center justify-end">
-          <Link href="/orders/new">
-            <button className="rounded-lg bg-primary px-6 py-4 text-primary-foreground text-xl font-semibold shadow-lg hover:scale-105 transition-transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-primary/40">
+          {/* Desktop / tablet: large prominent button */}
+          <Link href="/orders/new" className="hidden md:inline-block">
+            <button className="rounded-lg bg-primary px-8 py-5 text-primary-foreground text-2xl font-semibold shadow-2xl hover:scale-105 transition-transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-primary/40">
               New Order
+            </button>
+          </Link>
+
+          {/* Floating quick-access button for small screens */}
+          <Link href="/orders/new" className="md:hidden">
+            <button aria-label="New Order" className="fixed bottom-6 right-6 z-50 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground h-16 w-16 shadow-2xl focus:outline-none focus:ring-4 focus:ring-primary/40">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </Link>
         </div>
