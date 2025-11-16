@@ -66,9 +66,9 @@ const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           <Logo className="w-8 h-8 text-primary" />
-          <span className="text-lg font-semibold">ABIDS</span>
+          <span className="text-lg font-semibold">APIDS</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
