@@ -135,7 +135,7 @@ export default function NewOrderPage() {
   return (
     <AppShell>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>Search Medicines</CardTitle>
@@ -174,7 +174,7 @@ export default function NewOrderPage() {
           </Card>
         </div>
 
-        <div>
+  <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Cart</CardTitle>
