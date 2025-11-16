@@ -4,6 +4,7 @@ import { useCollection } from "@/firebase/firestore/use-collection";
 import { Package, ShoppingCart } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StockSummaryTable } from "@/components/dashboard/stock-summary-table";
+import Link from "next/link";
 import { useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { useEffect, useState, useMemo } from "react";
@@ -55,6 +56,11 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
+        <div className="flex items-center justify-end">
+          <Link href="/orders/new">
+            <button className="rounded-md bg-primary px-4 py-3 text-white text-lg font-semibold shadow">New Order</button>
+          </Link>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <StatCard
             title="Daily Sales"

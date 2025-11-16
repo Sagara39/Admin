@@ -48,7 +48,6 @@ import {
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/users", label: "Users", icon: Users },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/inventory", label: "Inventory", icon: Archive },
 ];

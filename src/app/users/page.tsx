@@ -1,28 +1,27 @@
-'use client';
+"use client";
 
-import { UsersTable } from "@/components/users/users-table";
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import type { User } from '@/lib/types';
+import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default function UsersPage() {
-    const firestore = useFirestore();
-    
-    const usersQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'users');
-    }, [firestore]);
-
-    const { data: users, isLoading } = useCollection<User>(usersQuery);
-
-    if (isLoading) {
-        return <AppShell><div>Loading...</div></AppShell>;
-    }
-
     return (
         <AppShell>
-            <UsersTable users={users || []} />
+            <div className="mx-auto max-w-3xl rounded-lg border bg-card p-6">
+                <h2 className="text-xl font-semibold">Users section removed</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    The Users management section has been removed from this application to
+                    focus the UI on pharmacy inventory and orders. If you need to manage
+                    users, that functionality has been archived.
+                </p>
+                <div className="mt-4 flex gap-2">
+                    <Link href="/inventory" className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-white">
+                        Go to Inventory
+                    </Link>
+                    <Link href="/" className="inline-flex items-center rounded-md border px-3 py-2 text-sm">
+                        Back to Dashboard
+                    </Link>
+                </div>
+            </div>
         </AppShell>
     );
 }

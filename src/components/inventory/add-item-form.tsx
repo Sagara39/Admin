@@ -72,9 +72,9 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Inventory Item</DialogTitle>
+          <DialogTitle>Add New Medicine</DialogTitle>
           <DialogDescription>
-            Enter the details for the new bakery item.
+            Enter the details for the new medicine to stock in the pharmacy.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -84,9 +84,9 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Name</FormLabel>
+                  <FormLabel>Medicine Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Croissant" {...field} />
+                    <Input placeholder="e.g., Paracetamol 500mg (box of 10)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,7 +111,7 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
                   name="current_amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Stock</FormLabel>
+                      <FormLabel>Current Stock (boxes/packs)</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -138,7 +138,7 @@ export function AddItemForm({ open, onOpenChange }: AddItemFormProps) {
                   <Button variant="outline">Cancel</Button>
                 </DialogClose>
                 <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Adding..." : "Add Item"}
+                  {form.formState.isSubmitting ? "Adding..." : "Add Medicine"}
                 </Button>
             </DialogFooter>
           </form>

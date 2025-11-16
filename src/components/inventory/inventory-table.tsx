@@ -100,24 +100,24 @@ export function InventoryTable({ inventory }: InventoryTableProps) {
     <>
       <AddItemForm open={isAddFormOpen} onOpenChange={setAddFormOpen} />
       <Card>
-        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <CardTitle>Inventory Management</CardTitle>
+            <CardTitle>Pharmacy Inventory</CardTitle>
             <CardDescription>
-              Add, update, or remove bakery items.
+              Add, update, or remove medicines stocked in the pharmacy.
             </CardDescription>
           </div>
           <Button onClick={() => setAddFormOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add New Item
+            Add New Medicine
           </Button>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Item Name</TableHead>
-                <TableHead>Item ID</TableHead>
+                <TableHead>Medicine Name</TableHead>
+                <TableHead>Medicine ID</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Current Stock</TableHead>
                 <TableHead className="text-right">Threshold</TableHead>
