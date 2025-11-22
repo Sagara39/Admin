@@ -96,8 +96,8 @@ export async function deleteInventoryItem(itemId: string): Promise<{ success: bo
 
 export async function placeOrder(order: { orderItems: { menuItemId: string; name: string; price: number; quantity: number }[]; itemCount: number; orderNumber: string; totalAmount: number; }): Promise<{ success: boolean; error?: string }> {
   try {
-    const newId = generateShortId();
-    const orderRef = doc(firestore, "orders", newId);
+    // Use orderNumber as Firestore document ID
+    const orderRef = doc(firestore, "orders", order.orderNumber);
 
     await runTransaction(firestore, async (tx) => {
       // Phase 1: Read all inventory items first
@@ -130,7 +130,7 @@ export async function placeOrder(order: { orderItems: { menuItemId: string; name
       // Phase 4: Create the order document
       const orderData = {
         ...order,
-        id: newId,
+        id: order.orderNumber,
         orderDate: serverTimestamp(),
       };
       tx.set(orderRef, orderData as any);

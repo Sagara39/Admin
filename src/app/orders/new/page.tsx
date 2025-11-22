@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import type { InventoryItem } from "@/lib/types";
-import { collection } from "firebase/firestore";
+import { collection, doc, updateDoc } from "firebase/firestore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -34,6 +34,8 @@ export default function NewOrderPage() {
     price: number;
     quantity: number;
   }[]>([]);
+
+  const [showDeliverButton, setShowDeliverButton] = React.useState<string | null>(null);
 
   const filtered = React.useMemo(() => {
     const s = searchTerm.toLowerCase();
@@ -110,7 +112,7 @@ export default function NewOrderPage() {
       orderItems,
       itemCount,
       orderNumber,
-      status: "completed",
+      status: "pending",
       totalAmount: total,
     };
 
@@ -118,13 +120,27 @@ export default function NewOrderPage() {
       const result = await placeOrderAction(orderPayload as any);
       if (result.success) {
         toast({ title: "Order placed", description: `Order ${orderNumber} created.` });
-        router.push("/orders");
+        setCart([]);
+        setShowDeliverButton(orderNumber); // Show the Deliver button
       } else {
         toast({ variant: "destructive", title: "Error", description: result.error || "Failed to place order." });
       }
     } catch (err) {
       console.error(err);
       toast({ variant: "destructive", title: "Error", description: "Failed to place order." });
+    }
+  };
+
+  const markAsDelivered = async (orderNumber: string) => {
+    if (!firestore) return toast({ variant: "destructive", title: "Error", description: "Firestore unavailable." });
+
+    try {
+      const orderRef = doc(firestore, "orders", orderNumber);
+      await updateDoc(orderRef, { status: "completed" });
+      toast({ title: "Order Delivered", description: `Order ${orderNumber} marked as delivered.` });
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Error", description: "Failed to mark order as delivered." });
     }
   };
 
@@ -217,6 +233,12 @@ export default function NewOrderPage() {
                   <Button onClick={placeOrder}>Place Order</Button>
                 </div>
               </div>
+
+              {showDeliverButton && (
+                <div className="mt-4 text-center">
+                  <Button onClick={() => markAsDelivered(showDeliverButton)}>Deliver</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

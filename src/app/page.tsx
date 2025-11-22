@@ -58,11 +58,11 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/orders/new" className="hidden md:block">
-            <div className="rounded-lg bg-primary text-primary-foreground p-6 shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="rounded-2xl bg-primary text-primary-foreground p-8 shadow-xl hover:shadow-2xl transition-shadow h-full flex flex-col items-center justify-center cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-lg font-semibold text-center">New Order</span>
+              <span className="text-2xl font-bold text-center">New Order</span>
             </div>
           </Link>
 
@@ -78,14 +78,15 @@ export default function DashboardPage() {
           <StatCard
             title="Daily Sales"
             value={`+${dailySalesCount.toLocaleString()}`}
-            icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            icon={<ShoppingCart className="h-8 w-8 text-muted-foreground" />}
             description="Number of orders placed today"
+            className="rounded-2xl p-8 text-xl"
           />
           <StatCard
             title="Low Stock Items"
             value={lowStockItems.length}
-            icon={<Package className="h-4 w-4 text-muted-foreground" />}
-            description={`${
+            icon={<Package className="h-8 w-8 text-muted-foreground" />}
+            description={`$${
               inventory && inventory.length > 0
                 ? (
                     (lowStockItems.length / inventory.length) *
@@ -93,6 +94,7 @@ export default function DashboardPage() {
                   ).toFixed(0)
                 : 0
             }% of items need restocking`}
+            className="rounded-2xl p-8 text-xl"
           />
         </div>
 
